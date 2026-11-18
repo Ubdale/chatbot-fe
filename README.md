@@ -1,6 +1,6 @@
 # AskData web app
 
-The Next.js frontend for AskData. It lives in this repo next to the FastAPI backend and is deployed separately to Vercel.
+The Next.js frontend for AskData, deployed to Vercel. The FastAPI backend lives in its own repository and is deployed to Render.
 
 ## How it talks to the backend
 
@@ -13,10 +13,9 @@ The browser only ever calls this app. `next.config.ts` forwards every `/api/*` r
 
 ## Run locally
 
-Start the backend first (from the repo root): `uv run uvicorn app.main:app --reload`. Then:
+Start the backend first (in the backend repo): `uv run uvicorn app.main:app --reload`. Then:
 
 ```bash
-cd frontend
 npm install
 npm run dev          # http://localhost:3000, proxies /api to http://localhost:8000
 ```
@@ -33,5 +32,5 @@ npm run build
 
 ## Deploy (Vercel)
 
-- **Root Directory:** `frontend`
-- **Environment variable:** `BACKEND_URL=https://<your-backend>.onrender.com`
+- Import this repository in Vercel (framework preset: Next.js, default settings).
+- **Environment variable:** `BACKEND_URL=https://<your-backend>.onrender.com`. It is read **at build time** (rewrites are compiled into the build), so redeploy after changing it.
