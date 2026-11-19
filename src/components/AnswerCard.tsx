@@ -148,7 +148,6 @@ export function AnswerCard({ message }: { message: Message }) {
           {(["xlsx", "pdf", "docx", "pptx"] as const).map((f) => (
             <ExcelButton key={f} messageId={message.id} filename={slug(message.content)} format={f} />
           ))}
-          {chart && <ExcelButton messageId={message.id} filename={slug(message.content)} format="png" />}
         </div>
       )}
 
