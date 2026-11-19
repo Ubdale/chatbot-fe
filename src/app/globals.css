@@ -19,6 +19,17 @@
   }
 }
 
+/* Native controls and scrollbars follow the theme (no white scrollbars in dark mode). */
+:root {
+  color-scheme: light dark;
+}
+
+/* Slim scrollbars everywhere, matching the chat list. */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(113 113 122 / 0.4) transparent;
+}
+
 body {
   background: var(--background);
   color: var(--foreground);

@@ -211,8 +211,10 @@ export function ChatView() {
   return (
     // Exactly one screen tall (minus the header): the chat list and the messages scroll
     // on their own, the page itself never does.
-    <div className="mx-auto flex h-[calc(100dvh-3.5rem-1px)] w-full max-w-7xl overflow-hidden">
-      <aside className="hidden min-h-0 w-64 shrink-0 flex-col border-r border-zinc-200 p-3 md:flex dark:border-zinc-800">
+    // The messages column runs to the window's right edge, so its scrollbar sits there;
+    // the sidebar stays lined up with the header's content.
+    <div className="flex h-[calc(100dvh-3.5rem-1px)] w-full overflow-hidden">
+      <aside className="ml-[max(0px,calc((100%-80rem)/2))] hidden min-h-0 w-64 shrink-0 flex-col border-r border-zinc-200 p-3 md:flex dark:border-zinc-800">
         <button
           onClick={() => router.push("/chat")}
           className="mb-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium shadow-sm transition hover:border-indigo-300 hover:shadow dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-800"
