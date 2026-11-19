@@ -4,11 +4,15 @@ import { NextResponse, type NextRequest } from "next/server";
 // The backend verifies the token on every API call; this is not a security boundary.
 const SESSION_COOKIE = "askdata_session";
 const AUTH_PAGES = ["/login", "/signup"];
+const PUBLIC_PAGES = ["/invite"]; // open with or without a session
 
 export function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
   const hasSession = request.cookies.has(SESSION_COOKIE);
   const isAuthPage = AUTH_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+  if (PUBLIC_PAGES.some((p) => pathname === p || pathname.startsWith(`${p}/`))) {
+    return NextResponse.next();
+  }
 
   if (!hasSession && !isAuthPage) {
     const url = new URL("/login", request.url);

@@ -11,6 +11,7 @@ import type { User } from "@/lib/types";
 const NAV = [
   { href: "/chat", label: "Ask" },
   { href: "/datasets", label: "Datasets" },
+  { href: "/settings", label: "Settings" },
 ];
 
 /** Free hosting (Render) sleeps when idle; the first request can take ~30-60s. */
