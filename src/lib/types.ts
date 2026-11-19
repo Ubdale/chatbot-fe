@@ -72,6 +72,45 @@ export type VersionResult = {
   };
 };
 
+/** A scheduled report: questions re-run daily or weekly. */
+export type Digest = {
+  id: string;
+  title: string;
+  dataset_id: string;
+  dataset_name: string;
+  questions: string[];
+  cadence: "daily" | "weekly";
+  weekday: number;
+  hour: number;
+  timezone: string;
+  schedule: string;
+  recipients: string[];
+  active: boolean;
+  next_run_at: string;
+  last_run_at: string | null;
+};
+
+export type DigestRun = {
+  id: string;
+  digest_id: string;
+  digest_title: string;
+  created_at: string;
+  dataset_version: number;
+  content: {
+    question: string;
+    summary: string;
+    columns?: string[];
+    rows?: unknown[][];
+    truncated?: boolean;
+    headline?: number | null;
+    previous?: number | null;
+    error?: string;
+  }[];
+  changes: { added: number; removed: number; changed: number } | null;
+  emailed: boolean;
+  email_note: string | null;
+};
+
 export type Preview = {
   dataset_id: string;
   columns: string[];

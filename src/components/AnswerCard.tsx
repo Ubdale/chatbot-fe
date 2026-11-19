@@ -1,6 +1,7 @@
 import { Chart } from "@/components/Chart";
 import { DoctorPanel } from "@/components/DoctorPanel";
 import { ProofTable } from "@/components/ProofTable";
+import { ScheduleButton } from "@/components/ScheduleButton";
 import { CodeBlocks } from "@/components/CodeBlocks";
 import { ExcelButton } from "@/components/ExcelButton";
 import { downloadCsv, FORMAT_LABELS, slug, type ExportFormat } from "@/lib/download";
@@ -160,6 +161,9 @@ export function AnswerCard({ message }: { message: Message }) {
           {(["xlsx", "pdf", "docx", "pptx"] as const).map((f) => (
             <ExcelButton key={f} messageId={message.id} filename={slug(message.content)} format={f} />
           ))}
+          {typeof explanation.plan.metric === "string" && explanation.plan.metric !== "describe" && (
+            <ScheduleButton messageId={message.id} />
+          )}
         </div>
       )}
 
