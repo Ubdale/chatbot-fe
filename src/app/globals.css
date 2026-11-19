@@ -24,3 +24,64 @@ body {
   color: var(--foreground);
   font-family: var(--font-sans), system-ui, sans-serif;
 }
+
+/* --- chat polish ------------------------------------------------------------------- */
+:root {
+  --shimmer-base: #71717a;
+  --shimmer-shine: #4f46e5;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --shimmer-base: #a1a1aa;
+    --shimmer-shine: #c7d2fe;
+  }
+}
+
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: none; }
+}
+.animate-fade-up { animation: fade-up 0.35s ease-out both; }
+
+@keyframes shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+.shimmer-text {
+  background: linear-gradient(90deg, var(--shimmer-base) 30%, var(--shimmer-shine) 50%, var(--shimmer-base) 70%);
+  background-size: 200% 100%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  animation: shimmer 2.4s linear infinite;
+}
+
+.avatar-orb {
+  display: grid;
+  place-items: center;
+  border-radius: 9999px;
+  color: white;
+  font-size: 14px;
+  background: conic-gradient(from 210deg, #6366f1, #a855f7, #ec4899, #6366f1);
+  box-shadow: 0 4px 14px -4px rgb(99 102 241 / 0.6);
+}
+@keyframes spin-slow { to { transform: rotate(360deg); } }
+.thinking-orb { animation: spin-slow 3s linear infinite; }
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.35; transform: scale(0.8); }
+  50% { opacity: 1; transform: scale(1); }
+}
+.pulse-dot {
+  display: inline-block;
+  height: 6px;
+  width: 6px;
+  border-radius: 9999px;
+  background: currentColor;
+  animation: pulse-dot 1s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-up, .shimmer-text, .thinking-orb, .pulse-dot { animation: none; }
+  .shimmer-text { color: var(--shimmer-base); background: none; }
+}
