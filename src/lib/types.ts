@@ -71,6 +71,8 @@ export type Answer = {
     cached: boolean;
     elapsed_ms: number;
     data_note?: string | null;
+    /** Table RAG: how names and topics were matched to the data */
+    retrieval_notes?: string[];
   };
   summary_source: "llm" | "template";
   /** answered instantly from an identical earlier question */

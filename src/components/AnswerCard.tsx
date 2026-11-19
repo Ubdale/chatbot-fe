@@ -1,5 +1,5 @@
 import { Chart } from "@/components/Chart";
-import { DataTable } from "@/components/DataTable";
+import { ProofTable } from "@/components/ProofTable";
 import { CodeBlocks } from "@/components/CodeBlocks";
 import { ExcelButton } from "@/components/ExcelButton";
 import { downloadCsv, FORMAT_LABELS, slug, type ExportFormat } from "@/lib/download";
@@ -126,6 +126,13 @@ export function AnswerCard({ message }: { message: Message }) {
         )}
         {message.content}
       </p>
+      {explanation.retrieval_notes && explanation.retrieval_notes.length > 0 && (
+        <ul className="space-y-0.5 text-xs text-zinc-500">
+          {explanation.retrieval_notes.map((note) => (
+            <li key={note}>🔎 {note}</li>
+          ))}
+        </ul>
+      )}
       {explanation.data_note && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           {explanation.data_note}
@@ -138,7 +145,7 @@ export function AnswerCard({ message }: { message: Message }) {
 
       {table.rows.length > 0 && (
         <div>
-          <DataTable columns={table.columns} rows={table.rows} truncated={table.truncated} />
+          <ProofTable messageId={message.id} table={table} plan={explanation.plan} />
           <button
             onClick={() => downloadCsv(table.columns, table.rows, `${slug(message.content)}.csv`)}
             className="mt-2 rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-600 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-zinc-700 dark:text-zinc-300"

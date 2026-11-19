@@ -2,7 +2,7 @@
 import { ApiError } from "@/lib/api";
 import type { AskResponse } from "@/lib/types";
 
-export type Stage = "planning" | "querying" | "summarizing" | "searching" | "reading";
+export type Stage = "planning" | "matching" | "querying" | "summarizing" | "searching" | "reading";
 
 /** The stream endpoint isn't reachable (old backend, proxy): use the plain request. */
 export class StreamUnavailable extends Error {}

@@ -13,6 +13,7 @@ const WORDS: Record<Stage | "waiting", string[]> = {
     "Planning the query…",
     "Pondering…",
   ],
+  matching: ["Finding the rows that match by meaning…", "Reading the text columns…", "Checking each match…"],
   querying: ["Running the numbers…", "Crunching your data…", "Querying the table…", "Counting carefully…"],
   summarizing: [
     "Writing the summary…",
@@ -59,7 +60,9 @@ export function Thinking({
   elapsed: number;
 }) {
   const steps = STEPS[kind];
-  const current = stage ? steps.findIndex((s) => s.stage === stage) : -1;
+  // Matching rows by meaning is part of computing the answer.
+  const shown = stage === "matching" ? "querying" : stage;
+  const current = shown ? steps.findIndex((s) => s.stage === shown) : -1;
   return (
     <div className="animate-fade-up flex gap-3">
       <div className="avatar-orb thinking-orb mt-0.5 h-8 w-8 shrink-0">✦</div>

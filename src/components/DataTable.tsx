@@ -6,12 +6,15 @@ export function DataTable({
   truncated = false,
   pretty = true,
   maxHeight = "max-h-96",
+  onRowClick,
 }: {
   columns: string[];
   rows: unknown[][];
   truncated?: boolean;
   pretty?: boolean;
   maxHeight?: string;
+  /** Makes rows clickable (e.g. to show the rows behind a grouped number). */
+  onRowClick?: (row: unknown[]) => void;
 }) {
   const numeric = columns.map((_, i) => rows.some((r) => typeof r[i] === "number"));
   return (
@@ -35,7 +38,14 @@ export function DataTable({
           </thead>
           <tbody>
             {rows.map((row, r) => (
-              <tr key={r} className="odd:bg-white even:bg-zinc-50/60 dark:odd:bg-zinc-950 dark:even:bg-zinc-900/50">
+              <tr
+                key={r}
+                onClick={onRowClick ? () => onRowClick(row) : undefined}
+                title={onRowClick ? "Show the rows behind this number" : undefined}
+                className={`odd:bg-white even:bg-zinc-50/60 dark:odd:bg-zinc-950 dark:even:bg-zinc-900/50 ${
+                  onRowClick ? "cursor-pointer hover:!bg-indigo-50 dark:hover:!bg-indigo-950/40" : ""
+                }`}
+              >
                 {row.map((v, i) => (
                   <td
                     key={i}
