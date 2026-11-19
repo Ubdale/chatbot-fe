@@ -42,8 +42,19 @@ export function slug(text: string): string {
   );
 }
 
-/** A styled Excel workbook or PDF report of an answer, built by the backend. */
-export async function downloadExport(messageId: string, filename: string, format: "xlsx" | "pdf") {
+export type ExportFormat = "xlsx" | "pdf" | "docx" | "pptx" | "csv" | "png";
+
+export const FORMAT_LABELS: Record<ExportFormat, string> = {
+  xlsx: "Excel",
+  pdf: "PDF",
+  docx: "Word",
+  pptx: "PowerPoint",
+  csv: "CSV",
+  png: "Chart PNG",
+};
+
+/** An answer as a file (Excel, PDF, Word, PowerPoint, CSV, chart PNG), built by the backend. */
+export async function downloadExport(messageId: string, filename: string, format: ExportFormat) {
   const res = await fetch(`/api/chat/messages/${messageId}/export.${format}`, { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Export failed (${res.status})`);
   save(await res.blob(), `${filename}.${format}`);

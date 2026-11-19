@@ -91,7 +91,7 @@ export type CodeAnswer = {
 
 export type FileAnswer = {
   type: "file";
-  format: "xlsx";
+  format: "xlsx" | "pdf" | "docx" | "pptx" | "csv" | "png";
   message_id: string;
   label: string;
   style?: Record<string, unknown> | null; // formatting asked for in chat

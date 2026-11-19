@@ -2,7 +2,7 @@ import { Chart } from "@/components/Chart";
 import { DataTable } from "@/components/DataTable";
 import { CodeBlocks } from "@/components/CodeBlocks";
 import { ExcelButton } from "@/components/ExcelButton";
-import { downloadCsv, slug } from "@/lib/download";
+import { downloadCsv, FORMAT_LABELS, slug, type ExportFormat } from "@/lib/download";
 import type { DocumentAnswer, Message } from "@/lib/types";
 
 function DocumentAnswerCard({ content, answer }: { content: string; answer: DocumentAnswer }) {
@@ -38,6 +38,16 @@ function DocumentAnswerCard({ content, answer }: { content: string; answer: Docu
   );
 }
 
+
+const FILE_BADGES: Record<ExportFormat, { text: string; color: string }> = {
+  xlsx: { text: "XLS", color: "bg-emerald-600" },
+  pdf: { text: "PDF", color: "bg-red-600" },
+  docx: { text: "DOC", color: "bg-blue-600" },
+  pptx: { text: "PPT", color: "bg-orange-600" },
+  csv: { text: "CSV", color: "bg-zinc-600" },
+  png: { text: "PNG", color: "bg-indigo-600" },
+};
+
 export function AnswerCard({ message }: { message: Message }) {
   if (message.status === "clarification") {
     return (
@@ -58,23 +68,35 @@ export function AnswerCard({ message }: { message: Message }) {
   }
 
   if (message.answer.type === "file") {
+    const file = message.answer;
+    const badge = FILE_BADGES[file.format];
+    const others = (["xlsx", "pdf", "docx", "pptx", "csv"] as const).filter((f) => f !== file.format);
     return (
       <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
         <p className="text-[15px] leading-relaxed">{message.content}</p>
-        <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/30">
-          <span className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-600 text-sm font-bold text-white">XLS</span>
+        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
+          <span className={`grid h-10 w-10 place-items-center rounded-lg text-xs font-bold text-white ${badge.color}`}>
+            {badge.text}
+          </span>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{message.answer.label}</p>
+            <p className="truncate text-sm font-medium">{file.label}</p>
             <p className="text-xs text-zinc-500">
-              {message.answer.style ? "Excel workbook, formatted as you asked" : "Formatted Excel workbook"}
+              {FORMAT_LABELS[file.format]}
+              {file.style ? ", formatted as you asked" : ""}
             </p>
           </div>
           {/* This message's own id: the export uses the formatting chosen in this chat. */}
-          <ExcelButton messageId={message.id} filename={slug(message.answer.label)} primary />
-          <ExcelButton messageId={message.id} filename={slug(message.answer.label)} format="pdf" />
+          <ExcelButton messageId={message.id} filename={slug(file.label)} format={file.format} primary />
+        </div>
+        <div className="flex flex-wrap items-center gap-1 text-xs text-zinc-500">
+          <span className="mt-2">Also as:</span>
+          {others.map((f) => (
+            <ExcelButton key={f} messageId={message.id} filename={slug(file.label)} format={f} />
+          ))}
         </div>
         <p className="text-xs text-zinc-500">
-          Tip: ask “make the header green”, “highlight overdue tasks in red” or “add an average row”.
+          Tip: ask “make the header green”, “highlight overdue tasks in red”, “add an average row” or
+          “export it as PowerPoint”.
         </p>
       </div>
     );
@@ -123,8 +145,10 @@ export function AnswerCard({ message }: { message: Message }) {
           >
             ⬇ CSV
           </button>
-          <ExcelButton messageId={message.id} filename={slug(message.content)} />
-          <ExcelButton messageId={message.id} filename={slug(message.content)} format="pdf" />
+          {(["xlsx", "pdf", "docx", "pptx"] as const).map((f) => (
+            <ExcelButton key={f} messageId={message.id} filename={slug(message.content)} format={f} />
+          ))}
+          {chart && <ExcelButton messageId={message.id} filename={slug(message.content)} format="png" />}
         </div>
       )}
 

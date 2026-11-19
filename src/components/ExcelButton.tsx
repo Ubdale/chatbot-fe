@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-import { downloadExport } from "@/lib/download";
+import { downloadExport, FORMAT_LABELS, type ExportFormat } from "@/lib/download";
 
 export function ExcelButton({
   messageId,
@@ -13,7 +13,7 @@ export function ExcelButton({
   messageId: string;
   filename: string;
   primary?: boolean;
-  format?: "xlsx" | "pdf";
+  format?: ExportFormat;
 }) {
   const [state, setState] = useState<"idle" | "busy" | "error">("idle");
 
@@ -32,7 +32,7 @@ export function ExcelButton({
     : "ml-2 mt-2 rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-600 transition hover:border-emerald-400 hover:text-emerald-700 dark:border-zinc-700 dark:text-zinc-300";
   return (
     <button onClick={click} disabled={state === "busy"} className={style}>
-      {state === "busy" ? "Preparing…" : state === "error" ? "Try again" : format === "pdf" ? "⬇ PDF" : "⬇ Excel"}
+      {state === "busy" ? "Preparing…" : state === "error" ? "Try again" : `⬇ ${FORMAT_LABELS[format]}`}
     </button>
   );
 }
