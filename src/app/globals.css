@@ -85,3 +85,9 @@ body {
   .animate-fade-up, .shimmer-text, .thinking-orb, .pulse-dot { animation: none; }
   .shimmer-text { color: var(--shimmer-base); background: none; }
 }
+
+/* A slim scrollbar for the chat list. */
+.sidebar-scroll {
+  scrollbar-width: thin;
+  scrollbar-color: rgb(113 113 122 / 0.4) transparent;
+}

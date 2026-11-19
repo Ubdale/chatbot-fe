@@ -209,8 +209,10 @@ export function ChatView() {
   const suggestions = dataset ? suggestQuestions(dataset.columns, dataset.kind) : [];
 
   return (
-    <div className="mx-auto flex w-full max-w-7xl flex-1">
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-zinc-200 p-3 md:flex dark:border-zinc-800">
+    // Exactly one screen tall (minus the header): the chat list and the messages scroll
+    // on their own, the page itself never does.
+    <div className="mx-auto flex h-[calc(100dvh-3.5rem-1px)] w-full max-w-7xl overflow-hidden">
+      <aside className="hidden min-h-0 w-64 shrink-0 flex-col border-r border-zinc-200 p-3 md:flex dark:border-zinc-800">
         <button
           onClick={() => router.push("/chat")}
           className="mb-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium shadow-sm transition hover:border-indigo-300 hover:shadow dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-800"
@@ -218,7 +220,7 @@ export function ChatView() {
           <span className="text-indigo-500">✦</span> New chat
         </button>
         <p className="mb-1 px-3 text-xs font-medium uppercase tracking-wide text-zinc-400">Recent</p>
-        <div className="space-y-0.5 overflow-y-auto">
+        <div className="sidebar-scroll -mr-2 min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-2">
           {conversations.map((c) => (
             <div
               key={c.id}
@@ -243,7 +245,7 @@ export function ChatView() {
         </div>
       </aside>
 
-      <section className="flex min-w-0 flex-1 flex-col">
+      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
         <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-sm dark:border-zinc-800">
           <span className="text-zinc-500">Talking to</span>
           {isNew && datasets ? (
