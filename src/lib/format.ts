@@ -1,7 +1,15 @@
 const numberFmt = new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 });
 
-export function formatValue(value: unknown): string {
+// Identifiers are numbers you never add up: show 40145, not 40,145.
+const ID_LIKE = /(^|[\s_-])(id|key|code|no|number|num|zip|phone|year|ref)($|[\s_-])/i;
+
+export function isIdLike(column: string): boolean {
+  return ID_LIKE.test(column);
+}
+
+export function formatValue(value: unknown, column = ""): string {
   if (value === null || value === undefined) return "—";
+  if (typeof value === "number" && Number.isInteger(value) && isIdLike(column)) return String(value);
   if (typeof value === "number") return numberFmt.format(value);
   if (typeof value === "boolean") return value ? "Yes" : "No";
   return String(value);

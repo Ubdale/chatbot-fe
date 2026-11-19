@@ -42,9 +42,9 @@ export function slug(text: string): string {
   );
 }
 
-/** A styled Excel workbook of an answer, built by the backend. */
-export async function downloadExcel(messageId: string, filename: string) {
-  const res = await fetch(`/api/chat/messages/${messageId}/export.xlsx`, { credentials: "same-origin" });
+/** A styled Excel workbook or PDF report of an answer, built by the backend. */
+export async function downloadExport(messageId: string, filename: string, format: "xlsx" | "pdf") {
+  const res = await fetch(`/api/chat/messages/${messageId}/export.${format}`, { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Export failed (${res.status})`);
-  save(await res.blob(), filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`);
+  save(await res.blob(), `${filename}.${format}`);
 }

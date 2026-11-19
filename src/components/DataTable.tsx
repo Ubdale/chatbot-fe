@@ -43,7 +43,7 @@ export function DataTable({
                       numeric[i] ? "text-right tabular-nums" : ""
                     } ${v === null ? "text-zinc-400" : ""}`}
                   >
-                    {formatValue(v)}
+                    {formatValue(v, columns[i])}
                   </td>
                 ))}
               </tr>

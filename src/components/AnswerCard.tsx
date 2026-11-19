@@ -117,6 +117,7 @@ export function AnswerCard({ message }: { message: Message }) {
             ⬇ CSV
           </button>
           <ExcelButton messageId={message.id} filename={slug(message.content)} />
+          <ExcelButton messageId={message.id} filename={slug(message.content)} format="pdf" />
         </div>
       )}
 
