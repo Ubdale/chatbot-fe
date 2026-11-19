@@ -94,6 +94,7 @@ export type FileAnswer = {
   format: "xlsx";
   message_id: string;
   label: string;
+  style?: Record<string, unknown> | null; // formatting asked for in chat
 };
 
 export type Message = {

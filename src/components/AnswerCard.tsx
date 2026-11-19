@@ -65,10 +65,17 @@ export function AnswerCard({ message }: { message: Message }) {
           <span className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-600 text-sm font-bold text-white">XLS</span>
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium">{message.answer.label}</p>
-            <p className="text-xs text-zinc-500">Formatted Excel workbook</p>
+            <p className="text-xs text-zinc-500">
+              {message.answer.style ? "Excel workbook, formatted as you asked" : "Formatted Excel workbook"}
+            </p>
           </div>
-          <ExcelButton messageId={message.answer.message_id} filename={slug(message.answer.label)} primary />
+          {/* This message's own id: the export uses the formatting chosen in this chat. */}
+          <ExcelButton messageId={message.id} filename={slug(message.answer.label)} primary />
+          <ExcelButton messageId={message.id} filename={slug(message.answer.label)} format="pdf" />
         </div>
+        <p className="text-xs text-zinc-500">
+          Tip: ask “make the header green”, “highlight overdue tasks in red” or “add an average row”.
+        </p>
       </div>
     );
   }
