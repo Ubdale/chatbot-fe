@@ -1,5 +1,7 @@
 import { Chart } from "@/components/Chart";
 import { DataTable } from "@/components/DataTable";
+import { CodeBlocks } from "@/components/CodeBlocks";
+import { downloadCsv, slug } from "@/lib/download";
 import type { DocumentAnswer, Message } from "@/lib/types";
 
 function DocumentAnswerCard({ content, answer }: { content: string; answer: DocumentAnswer }) {
@@ -54,6 +56,14 @@ export function AnswerCard({ message }: { message: Message }) {
     );
   }
 
+  if (message.answer.type === "code") {
+    return (
+      <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-[15px] leading-relaxed">{message.content}</p>
+        <CodeBlocks blocks={message.answer.blocks} />
+      </div>
+    );
+  }
   if (message.answer.type === "document") {
     return <DocumentAnswerCard content={message.content} answer={message.answer} />;
   }
@@ -77,10 +87,20 @@ export function AnswerCard({ message }: { message: Message }) {
         </p>
       )}
 
-      {chart && <Chart spec={chart} columns={table.columns} rows={table.rows} />}
+      {chart && (
+        <Chart spec={chart} columns={table.columns} rows={table.rows} filename={slug(message.content)} />
+      )}
 
       {table.rows.length > 0 && (
-        <DataTable columns={table.columns} rows={table.rows} truncated={table.truncated} />
+        <div>
+          <DataTable columns={table.columns} rows={table.rows} truncated={table.truncated} />
+          <button
+            onClick={() => downloadCsv(table.columns, table.rows, `${slug(message.content)}.csv`)}
+            className="mt-2 rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-600 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-zinc-700 dark:text-zinc-300"
+          >
+            ⬇ CSV
+          </button>
+        </div>
       )}
 
     </div>

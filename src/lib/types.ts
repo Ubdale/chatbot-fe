@@ -84,12 +84,17 @@ export type DocumentAnswer = {
   sources: { n: number; page: number | null; text: string; cited: boolean }[];
 };
 
+export type CodeAnswer = {
+  type: "code";
+  blocks: { language: string; code: string }[];
+};
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
   status: "answered" | "clarification" | "failed" | null;
-  answer: Answer | DocumentAnswer | null;
+  answer: Answer | DocumentAnswer | CodeAnswer | null;
   /** 1 helpful, -1 wrong */
   rating?: number | null;
   created_at: string;

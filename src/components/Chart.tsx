@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 
+import { downloadDataUrl } from "@/lib/download";
 import { formatValue, prettyColumn } from "@/lib/format";
 import type { Chart as ChartSpec } from "@/lib/types";
 
@@ -58,27 +59,48 @@ function buildOption(spec: ChartSpec, columns: string[], rows: unknown[][]): Opt
   };
 }
 
+type ChartInstance = {
+  setOption(o: Option): void;
+  resize(): void;
+  dispose(): void;
+  getDataURL(o: { type: "png"; pixelRatio: number; backgroundColor: string }): string;
+};
+
 export function Chart({
   spec,
   columns,
   rows,
+  filename = "chart",
 }: {
   spec: ChartSpec;
   columns: string[];
   rows: unknown[][];
+  filename?: string;
 }) {
   const ref = useRef<HTMLDivElement>(null);
+  const instance = useRef<ChartInstance | null>(null);
+
+  function savePng() {
+    const chart = instance.current;
+    if (!chart) return;
+    const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    downloadDataUrl(
+      chart.getDataURL({ type: "png", pixelRatio: 2, backgroundColor: dark ? "#18181b" : "#ffffff" }),
+      `${filename}.png`,
+    );
+  }
 
   useEffect(() => {
     let disposed = false;
     let observer: ResizeObserver | undefined;
-    let chart: { setOption(o: Option): void; resize(): void; dispose(): void } | undefined;
+    let chart: ChartInstance | undefined;
 
     // Loaded on demand so the chart library isn't in the initial page bundle.
     import("echarts").then((echarts) => {
       if (disposed || !ref.current) return;
       const dark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      chart = echarts.init(ref.current, dark ? "dark" : undefined, { renderer: "svg" });
+      chart = echarts.init(ref.current, dark ? "dark" : undefined, { renderer: "canvas" });
+      instance.current = chart;
       chart.setOption({ backgroundColor: "transparent", ...buildOption(spec, columns, rows) });
       observer = new ResizeObserver(() => chart?.resize());
       observer.observe(ref.current);
@@ -90,5 +112,15 @@ export function Chart({
     };
   }, [spec, columns, rows]);
 
-  return <div ref={ref} className="h-72 w-full" role="img" aria-label={`${spec.type} chart`} />;
+  return (
+    <div className="relative">
+      <div ref={ref} className="h-72 w-full" role="img" aria-label={`${spec.type} chart`} />
+      <button
+        onClick={savePng}
+        className="absolute right-0 top-0 rounded-md border border-zinc-200 bg-white/90 px-2 py-1 text-xs text-zinc-600 opacity-70 transition hover:opacity-100 dark:border-zinc-700 dark:bg-zinc-900/90 dark:text-zinc-300"
+      >
+        ⬇ PNG
+      </button>
+    </div>
+  );
 }
