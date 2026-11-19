@@ -73,6 +73,8 @@ export type Answer = {
     data_note?: string | null;
   };
   summary_source: "llm" | "template";
+  /** answered instantly from an identical earlier question */
+  reused?: boolean;
 };
 
 export type DocumentAnswer = {
@@ -88,6 +90,8 @@ export type Message = {
   content: string;
   status: "answered" | "clarification" | "failed" | null;
   answer: Answer | DocumentAnswer | null;
+  /** 1 helpful, -1 wrong */
+  rating?: number | null;
   created_at: string;
 };
 
@@ -106,3 +110,5 @@ export type AskResponse = {
   question: Message;
   reply: Message;
 };
+
+export type GlossaryTerm = { id: string; term: string; meaning: string; created_at: string };

@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
 import { AnswerCard } from "@/components/AnswerCard";
+import { Feedback } from "@/components/Feedback";
 import { Thinking } from "@/components/Thinking";
 import { Button, ErrorNote } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
@@ -53,6 +54,7 @@ function AssistantTurn({ message }: { message: Message }) {
       <div className="avatar-orb mt-0.5 h-8 w-8 shrink-0">✦</div>
       <div className="min-w-0 flex-1">
         <AnswerCard message={message} />
+        {message.status !== "failed" && <Feedback messageId={message.id} initial={message.rating ?? null} />}
       </div>
     </div>
   );
@@ -345,7 +347,7 @@ export function ChatView() {
             </button>
           </div>
           <p className="mx-auto mt-1.5 max-w-3xl text-center text-[11px] text-zinc-400">
-            Enter to send · Shift+Enter for a new line · Numbers are computed from your data, not invented
+            Enter to send · Teach me your words, e.g. “sales means revenue” · Numbers are computed, never invented
           </p>
         </form>
       </section>

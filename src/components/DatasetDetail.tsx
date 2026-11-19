@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/DataTable";
+import { Glossary } from "@/components/Glossary";
 import { Button, Card, ErrorNote, Spinner } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { formatValue } from "@/lib/format";
@@ -110,6 +111,8 @@ export function DatasetDetail({ id }: { id: string }) {
         </div>
       </Card>
       )}
+
+      {dataset.kind === "table" && <Glossary datasetId={dataset.id} />}
 
       <section>
         <h2 className="mb-2 text-sm font-semibold">

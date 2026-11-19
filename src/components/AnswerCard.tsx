@@ -60,7 +60,17 @@ export function AnswerCard({ message }: { message: Message }) {
   const { table, chart, explanation } = message.answer;
   return (
     <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-[15px] leading-relaxed">{message.content}</p>
+      <p className="text-[15px] leading-relaxed">
+        {message.answer.reused && (
+          <span
+            title="Answered instantly from an identical earlier question; numbers recomputed"
+            className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
+          >
+            ⚡ Instant
+          </span>
+        )}
+        {message.content}
+      </p>
       {explanation.data_note && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-xs text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
           {explanation.data_note}
