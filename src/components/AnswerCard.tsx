@@ -1,4 +1,5 @@
 import { Chart } from "@/components/Chart";
+import { DoctorPanel } from "@/components/DoctorPanel";
 import { ProofTable } from "@/components/ProofTable";
 import { CodeBlocks } from "@/components/CodeBlocks";
 import { ExcelButton } from "@/components/ExcelButton";
@@ -145,7 +146,11 @@ export function AnswerCard({ message }: { message: Message }) {
 
       {table.rows.length > 0 && (
         <div>
-          <ProofTable messageId={message.id} table={table} plan={explanation.plan} />
+          {message.answer.doctor ? (
+            <DoctorPanel datasetId={message.answer.doctor.dataset_id} issues={message.answer.doctor.issues} />
+          ) : (
+            <ProofTable messageId={message.id} table={table} plan={explanation.plan} />
+          )}
           <button
             onClick={() => downloadCsv(table.columns, table.rows, `${slug(message.content)}.csv`)}
             className="mt-2 rounded-md border border-zinc-200 px-2 py-1 text-xs text-zinc-600 transition hover:border-indigo-300 hover:text-indigo-600 dark:border-zinc-700 dark:text-zinc-300"

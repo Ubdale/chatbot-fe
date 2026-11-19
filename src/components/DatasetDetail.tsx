@@ -4,11 +4,13 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { DataTable } from "@/components/DataTable";
+import { DoctorPanel } from "@/components/DoctorPanel";
+import { NewVersionButton } from "@/components/NewVersionButton";
 import { Glossary } from "@/components/Glossary";
 import { Button, Card, ErrorNote, Spinner } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { formatValue } from "@/lib/format";
-import type { Dataset, Preview } from "@/lib/types";
+import type { Dataset, DoctorReport, Preview } from "@/lib/types";
 
 const KIND_STYLE: Record<string, string> = {
   number: "bg-sky-100 text-sky-800 dark:bg-sky-950 dark:text-sky-300",
@@ -22,11 +24,23 @@ export function DatasetDetail({ id }: { id: string }) {
   const [dataset, setDataset] = useState<Dataset | null>(null);
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [doctor, setDoctor] = useState<DoctorReport | "loading" | null>(null);
+  const [reloads, setReloads] = useState(0);
 
   useEffect(() => {
     api<Dataset>(`/datasets/${id}`).then(setDataset).catch((e: ApiError) => setError(e.message));
     api<Preview>(`/datasets/${id}/preview?limit=50`).then(setPreview).catch(() => undefined);
-  }, [id]);
+  }, [id, reloads]);
+
+  async function checkData() {
+    setDoctor("loading");
+    try {
+      setDoctor(await api<DoctorReport>(`/datasets/${id}/doctor`));
+    } catch (e) {
+      setDoctor(null);
+      setError(e instanceof ApiError ? e.message : "The check failed.");
+    }
+  }
 
   if (error) {
     return (
@@ -55,12 +69,51 @@ export function DatasetDetail({ id }: { id: string }) {
             {dataset.row_count.toLocaleString()} rows · {dataset.columns.length} columns · from{" "}
             {dataset.original_filename}
             {dataset.sheet_name && ` (sheet “${dataset.sheet_name}”)`}
+            {dataset.version > 1 && ` · version ${dataset.version}`}
           </p>
         </div>
+        {dataset.kind === "table" && (
+          <>
+            <NewVersionButton
+              datasetId={dataset.id}
+              onUploaded={() => {
+                setDoctor(null);
+                setReloads((n) => n + 1);
+              }}
+            />
+            <button
+              onClick={checkData}
+              className="rounded-lg border border-zinc-300 px-3 py-1.5 text-sm font-medium transition hover:border-indigo-400 dark:border-zinc-700"
+            >
+              🩺 Check data
+            </button>
+          </>
+        )}
         <Link href={`/chat?d=${dataset.id}`}>
           <Button>Ask a question</Button>
         </Link>
       </div>
+
+      {doctor && (
+        <Card className="space-y-3 p-4">
+          <h2 className="text-sm font-semibold">Data doctor{dataset.version > 1 && ` · version ${dataset.version}`}</h2>
+          {doctor === "loading" ? (
+            <p className="flex items-center gap-2 text-sm text-zinc-500">
+              <Spinner /> Checking every row…
+            </p>
+          ) : (
+            <>
+              <p className="text-sm text-zinc-600 dark:text-zinc-400">{doctor.summary}</p>
+              <DoctorPanel
+                key={doctor.version}
+                datasetId={dataset.id}
+                issues={doctor.issues}
+                onFixed={() => setReloads((n) => n + 1)}
+              />
+            </>
+          )}
+        </Card>
+      )}
 
       {dataset.extraction === "ai_vision" && (
         <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">

@@ -44,6 +44,34 @@ export type UploadResult = Dataset & {
   detected_encoding: string | null;
 };
 
+/** One problem the data doctor found. */
+export type DoctorIssue = {
+  id: string;
+  severity: "high" | "medium" | "low";
+  title: string;
+  column: string | null;
+  rows: number;
+  detail: string;
+  examples: string[];
+  fixable: boolean;
+  fix_label: string | null;
+};
+
+export type DoctorReport = { dataset_id: string; version: number; summary: string; issues: DoctorIssue[] };
+
+/** A new version of a table (uploaded or fixed), and what changed. */
+export type VersionResult = {
+  dataset: Dataset;
+  changes: {
+    key: string | null;
+    added: number;
+    removed: number;
+    changed: number;
+    rows_before: number;
+    rows_after: number;
+  };
+};
+
 export type Preview = {
   dataset_id: string;
   columns: string[];
@@ -75,6 +103,8 @@ export type Answer = {
     retrieval_notes?: string[];
   };
   summary_source: "llm" | "template";
+  /** a data doctor report, with fixable issues */
+  doctor?: { dataset_id: string; version: number; issues: DoctorIssue[] };
   /** answered instantly from an identical earlier question */
   reused?: boolean;
 };
