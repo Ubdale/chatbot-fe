@@ -30,6 +30,10 @@ export type DatasetSummary = {
   size_bytes: number;
   row_count: number;
   version: number;
+  /** "table": answers computed with SQL. "document": answers quoted from the text. */
+  kind: "table" | "document";
+  /** "ai_vision" when an AI model read the table from an image: ask users to check it. */
+  extraction: string | null;
   created_at: string;
 };
 
@@ -55,6 +59,7 @@ export type Chart = {
 };
 
 export type Answer = {
+  type?: "table";
   table: { columns: string[]; rows: unknown[][]; truncated: boolean };
   chart: Chart | null;
   explanation: {
@@ -65,8 +70,16 @@ export type Answer = {
     plan: Record<string, unknown>;
     cached: boolean;
     elapsed_ms: number;
+    data_note?: string | null;
   };
   summary_source: "llm" | "template";
+};
+
+export type DocumentAnswer = {
+  type: "document";
+  /** false: the model's answer couldn't be backed up by the passages and was withheld */
+  grounded: boolean;
+  sources: { n: number; page: number | null; text: string; cited: boolean }[];
 };
 
 export type Message = {
@@ -74,7 +87,7 @@ export type Message = {
   role: "user" | "assistant";
   content: string;
   status: "answered" | "clarification" | "failed" | null;
-  answer: Answer | null;
+  answer: Answer | DocumentAnswer | null;
   created_at: string;
 };
 

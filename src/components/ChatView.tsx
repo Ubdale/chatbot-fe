@@ -147,7 +147,7 @@ export function ChatView() {
   }
 
   const isNew = !conversationId;
-  const suggestions = dataset ? suggestQuestions(dataset.columns) : [];
+  const suggestions = dataset ? suggestQuestions(dataset.columns, dataset.kind) : [];
 
   return (
     <div className="mx-auto flex w-full max-w-7xl flex-1">

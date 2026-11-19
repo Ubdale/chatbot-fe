@@ -9,6 +9,11 @@ import { formatBytes, formatDate } from "@/lib/format";
 import type { DatasetSummary, UploadResult } from "@/lib/types";
 
 const MAX_MB = 20;
+const ACCEPT =
+  ".csv,.tsv,.txt,.xlsx,.xlsm,.xls,.ods,.json,.jsonl,.parquet,.pdf,.docx,.md,.png,.jpg,.jpeg,.webp";
+const EXTENSIONS = ACCEPT.split(",");
+const isAccepted = (name: string) => EXTENSIONS.some((ext) => name.toLowerCase().endsWith(ext));
+type Mode = "auto" | "table" | "document";
 
 export function DatasetsView() {
   const [datasets, setDatasets] = useState<DatasetSummary[] | null>(null);
@@ -16,6 +21,7 @@ export function DatasetsView() {
   const [notice, setNotice] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [mode, setMode] = useState<Mode>("auto");
   const fileInput = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -25,18 +31,24 @@ export function DatasetsView() {
   async function upload(file: File) {
     setError(null);
     setNotice(null);
-    if (!/\.(csv|xlsx)$/i.test(file.name)) return setError("Only .csv and .xlsx files are supported.");
+    if (!isAccepted(file.name)) return setError("That file type isn't supported.");
     if (file.size > MAX_MB * 1024 * 1024) return setError(`That file is over the ${MAX_MB} MB limit.`);
     setUploading(file.name);
     try {
       const form = new FormData();
       form.append("file", file);
+      form.append("mode", mode);
       const ds = await api<UploadResult>("/datasets", { form });
       setDatasets((list) => [ds, ...(list ?? [])]);
       const others = ds.sheet_names.filter((s) => s !== ds.sheet_name);
       setNotice(
-        `Added “${ds.name}”: ${ds.row_count.toLocaleString()} rows, ${ds.columns.length} columns.` +
-          (others.length ? ` Used sheet “${ds.sheet_name}” (other sheets: ${others.join(", ")}).` : ""),
+        ds.kind === "document"
+          ? `Added “${ds.name}” as a document (${ds.row_count.toLocaleString()} passages). Answers will quote it with page sources.`
+          : `Added “${ds.name}”: ${ds.row_count.toLocaleString()} rows, ${ds.columns.length} columns.` +
+              (others.length ? ` Used “${ds.sheet_name}” (others: ${others.join(", ")}).` : "") +
+              (ds.extraction === "ai_vision"
+                ? " This table was read from an image by AI: please check the preview."
+                : ""),
       );
     } catch (e) {
       setError(e instanceof ApiError ? e.message : "Upload failed.");
@@ -96,13 +108,27 @@ export function DatasetsView() {
             <Button className="mt-3" onClick={() => fileInput.current?.click()}>
               Choose a file
             </Button>
-            <p className="mt-2 text-xs text-zinc-500">.csv or .xlsx, up to {MAX_MB} MB</p>
+            <p className="mt-2 text-xs text-zinc-500">
+              Spreadsheets, CSV, JSON, PDF, Word, text or a picture of a table, up to {MAX_MB} MB
+            </p>
+            <label className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
+              Read as
+              <select
+                value={mode}
+                onChange={(e) => setMode(e.target.value as Mode)}
+                className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
+              >
+                <option value="auto">Auto</option>
+                <option value="table">Table (computed answers)</option>
+                <option value="document">Document (quoted answers)</option>
+              </select>
+            </label>
           </>
         )}
         <input
           ref={fileInput}
           type="file"
-          accept=".csv,.xlsx"
+          accept={ACCEPT}
           className="hidden"
           onChange={(e) => e.target.files?.[0] && upload(e.target.files[0])}
         />
@@ -130,8 +156,19 @@ export function DatasetsView() {
                   <Link href={`/datasets/${ds.id}`} className="font-medium hover:underline">
                     {ds.name}
                   </Link>
+                  {ds.kind === "document" && (
+                    <span className="ml-2 rounded bg-violet-100 px-1.5 py-0.5 text-xs text-violet-800 dark:bg-violet-950 dark:text-violet-300">
+                      Document
+                    </span>
+                  )}
+                  {ds.extraction === "ai_vision" && (
+                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
+                      AI-read: please check
+                    </span>
+                  )}
                   <p className="text-xs text-zinc-500">
-                    {ds.row_count.toLocaleString()} rows · {ds.file_format.toUpperCase()} ·{" "}
+                    {ds.row_count.toLocaleString()} {ds.kind === "document" ? "passages" : "rows"} ·{" "}
+                    {ds.file_format.toUpperCase()} ·{" "}
                     {formatBytes(ds.size_bytes)} · added {formatDate(ds.created_at)}
                   </p>
                 </div>

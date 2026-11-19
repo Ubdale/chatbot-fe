@@ -61,6 +61,13 @@ export function DatasetDetail({ id }: { id: string }) {
         </Link>
       </div>
 
+      {dataset.extraction === "ai_vision" && (
+        <p className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2 text-sm text-amber-800 dark:border-amber-900 dark:bg-amber-950/30 dark:text-amber-200">
+          This table was read from an image by AI. Compare the rows below with your original
+          before relying on the numbers.
+        </p>
+      )}
+      {dataset.kind === "table" && (
       <Card className="overflow-hidden">
         <h2 className="border-b border-zinc-200 px-4 py-3 text-sm font-semibold dark:border-zinc-800">
           Columns
@@ -102,9 +109,12 @@ export function DatasetDetail({ id }: { id: string }) {
           </table>
         </div>
       </Card>
+      )}
 
       <section>
-        <h2 className="mb-2 text-sm font-semibold">First {preview?.rows.length ?? 50} rows</h2>
+        <h2 className="mb-2 text-sm font-semibold">
+          {dataset.kind === "document" ? "Passages" : `First ${preview?.rows.length ?? 50} rows`}
+        </h2>
         {preview ? (
           <DataTable columns={preview.columns} rows={preview.rows} pretty={false} maxHeight="max-h-[32rem]" />
         ) : (
