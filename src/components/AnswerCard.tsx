@@ -1,6 +1,7 @@
 import { Chart } from "@/components/Chart";
 import { DataTable } from "@/components/DataTable";
 import { CodeBlocks } from "@/components/CodeBlocks";
+import { ExcelButton } from "@/components/ExcelButton";
 import { downloadCsv, slug } from "@/lib/download";
 import type { DocumentAnswer, Message } from "@/lib/types";
 
@@ -56,6 +57,21 @@ export function AnswerCard({ message }: { message: Message }) {
     );
   }
 
+  if (message.answer.type === "file") {
+    return (
+      <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
+        <p className="text-[15px] leading-relaxed">{message.content}</p>
+        <div className="flex items-center gap-3 rounded-lg border border-emerald-200 bg-emerald-50 p-3 dark:border-emerald-900 dark:bg-emerald-950/30">
+          <span className="grid h-10 w-10 place-items-center rounded-lg bg-emerald-600 text-sm font-bold text-white">XLS</span>
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium">{message.answer.label}</p>
+            <p className="text-xs text-zinc-500">Formatted Excel workbook</p>
+          </div>
+          <ExcelButton messageId={message.answer.message_id} filename={slug(message.answer.label)} primary />
+        </div>
+      </div>
+    );
+  }
   if (message.answer.type === "code") {
     return (
       <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
@@ -100,6 +116,7 @@ export function AnswerCard({ message }: { message: Message }) {
           >
             ⬇ CSV
           </button>
+          <ExcelButton messageId={message.id} filename={slug(message.content)} />
         </div>
       )}
 

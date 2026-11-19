@@ -89,12 +89,19 @@ export type CodeAnswer = {
   blocks: { language: string; code: string }[];
 };
 
+export type FileAnswer = {
+  type: "file";
+  format: "xlsx";
+  message_id: string;
+  label: string;
+};
+
 export type Message = {
   id: string;
   role: "user" | "assistant";
   content: string;
   status: "answered" | "clarification" | "failed" | null;
-  answer: Answer | DocumentAnswer | CodeAnswer | null;
+  answer: Answer | DocumentAnswer | CodeAnswer | FileAnswer | null;
   /** 1 helpful, -1 wrong */
   rating?: number | null;
   created_at: string;

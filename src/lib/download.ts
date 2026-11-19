@@ -41,3 +41,10 @@ export function slug(text: string): string {
       .slice(0, 60) || "answer"
   );
 }
+
+/** A styled Excel workbook of an answer, built by the backend. */
+export async function downloadExcel(messageId: string, filename: string) {
+  const res = await fetch(`/api/chat/messages/${messageId}/export.xlsx`, { credentials: "same-origin" });
+  if (!res.ok) throw new Error(`Export failed (${res.status})`);
+  save(await res.blob(), filename.endsWith(".xlsx") ? filename : `${filename}.xlsx`);
+}
