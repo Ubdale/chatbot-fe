@@ -5,6 +5,7 @@ import type React from "react";
 import { useEffect, useRef, useState, type DragEvent } from "react";
 
 import { Button, ErrorNote, Spinner } from "@/components/ui";
+import { Select } from "@/components/Select";
 import { api, ApiError } from "@/lib/api";
 import { formatBytes, formatDate } from "@/lib/format";
 import type { DatasetSummary, UploadResult } from "@/lib/types";
@@ -115,18 +116,19 @@ export function DatasetsView() {
             <p className="mt-2 text-xs text-zinc-500">
               Spreadsheets, CSV, JSON, PDF, Word, text or a picture of a table, up to {MAX_MB} MB
             </p>
-            <label className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
+            <div className="mt-3 flex items-center gap-2 text-xs text-zinc-500">
               Read as
-              <select
+              <Select
                 value={mode}
-                onChange={(e) => setMode(e.target.value as Mode)}
-                className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs dark:border-zinc-700 dark:bg-zinc-900"
-              >
-                <option value="auto">Auto</option>
-                <option value="table">Table (computed answers)</option>
-                <option value="document">Document (quoted answers)</option>
-              </select>
-            </label>
+                onValueChange={(v) => setMode(v as Mode)}
+                ariaLabel="Read as"
+                items={[
+                  { value: "auto", label: "Auto" },
+                  { value: "table", label: "Table (computed answers)" },
+                  { value: "document", label: "Document (quoted answers)" },
+                ]}
+              />
+            </div>
           </>
         )}
         <input

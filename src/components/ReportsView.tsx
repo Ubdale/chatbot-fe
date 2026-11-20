@@ -84,8 +84,6 @@ function DigestEditor({ digest, onRemoved }: { digest: Digest; onRemoved: () => 
     onRemoved();
   }
 
-  const select =
-    "rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900";
   return (
     <Card className={`space-y-3 p-4 ${local.active ? "" : "opacity-60"}`}>
       <div className="flex flex-wrap items-start gap-2">
@@ -138,22 +136,28 @@ function DigestEditor({ digest, onRemoved }: { digest: Digest; onRemoved: () => 
             items={DAYS.map((d, i) => ({ value: String(i), label: `on ${d}` }))}
           />
         )}
-        <label className="flex items-center gap-1.5">
+        <span className="flex items-center gap-1.5">
           at
-          <input
-            type="time"
-            defaultValue={`${String(local.hour).padStart(2, "0")}:${String(local.minute ?? 0).padStart(2, "0")}`}
-            key={`${local.hour}:${local.minute}`}
-            onBlur={(e) => {
-              const [h, m] = e.target.value.split(":").map(Number);
-              if (!Number.isNaN(h) && !Number.isNaN(m) && (h !== local.hour || m !== local.minute)) {
-                save({ hour: h, minute: m });
-              }
-            }}
-            className={select}
-            aria-label="Time of day"
+          <Select
+            value={String(local.hour)}
+            onValueChange={(v) => save({ hour: Number(v), minute: local.minute ?? 0 })}
+            ariaLabel="Hour"
+            items={Array.from({ length: 24 }, (_, h) => ({
+              value: String(h),
+              label: String(h).padStart(2, "0"),
+            }))}
           />
-        </label>
+          <span className="text-zinc-400">:</span>
+          <Select
+            value={String(local.minute ?? 0)}
+            onValueChange={(v) => save({ hour: local.hour, minute: Number(v) })}
+            ariaLabel="Minute"
+            items={Array.from({ length: 60 }, (_, m) => ({
+              value: String(m),
+              label: String(m).padStart(2, "0"),
+            }))}
+          />
+        </span>
         <span className="text-xs text-zinc-500">{local.timezone}</span>
       </div>
 
