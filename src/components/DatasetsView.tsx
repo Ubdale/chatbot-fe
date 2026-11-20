@@ -49,6 +49,9 @@ export function DatasetsView() {
               (others.length ? ` Used “${ds.sheet_name}” (others: ${others.join(", ")}).` : "") +
               (ds.extraction === "ai_vision"
                 ? " This table was read from an image by AI: please check the preview."
+                : "") +
+              (ds.extra_sheets?.length
+                ? ` Other sheets were added as their own datasets: ${ds.extra_sheets.join(", ")}.`
                 : ""),
       );
     } catch (e) {

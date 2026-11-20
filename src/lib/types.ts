@@ -42,6 +42,7 @@ export type Dataset = DatasetSummary & { columns: Column[] };
 export type UploadResult = Dataset & {
   sheet_names: string[];
   detected_encoding: string | null;
+  extra_sheets: string[];
 };
 
 /** One problem the data doctor found. */
