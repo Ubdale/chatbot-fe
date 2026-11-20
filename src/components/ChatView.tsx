@@ -87,6 +87,9 @@ export function ChatView() {
     messages: [],
   });
   const [chosenDatasetId, setChosenDatasetId] = useState<string | null>(null);
+  // Lets any chat (even an existing one) switch to another data source; the override is
+  // scoped to the conversation it was made in (null = a new, unsaved chat).
+  const [override, setOverride] = useState<{ conv: string | null; id: string } | null>(null);
   const [detail, setDetail] = useState<Dataset | null>(null);
   const [pending, setPending] = useState<string | null>(null);
   const [stage, setStage] = useState<Stage | null>(null);
@@ -99,11 +102,17 @@ export function ChatView() {
   // Everything below is derived from the URL + loaded data (no state syncing in effects).
   const threadLoaded = thread.id === conversationId;
   const messages = threadLoaded ? thread.messages : [];
-  const datasetId = conversationId
+  const baseDatasetId = conversationId
     ? threadLoaded
       ? thread.datasetId
       : null
     : (datasets?.find((d) => d.id === (chosenDatasetId ?? datasetParam))?.id ?? datasets?.[0]?.id ?? null);
+  // A chosen override for THIS conversation (and still in the list) wins.
+  const sourceOverride =
+    override && override.conv === conversationId && datasets?.some((d) => d.id === override.id)
+      ? override.id
+      : null;
+  const datasetId = sourceOverride ?? baseDatasetId;
   const dataset = detail && detail.id === datasetId ? detail : null;
 
   useEffect(() => {
@@ -144,7 +153,7 @@ export function ChatView() {
       setError(null);
       setInput("");
       const body = conversationId
-        ? { question: q, conversation_id: conversationId }
+        ? { question: q, conversation_id: conversationId, dataset_id: datasetId }
         : { question: q, dataset_id: datasetId };
       let sawStage = false;
       try {
@@ -164,6 +173,7 @@ export function ChatView() {
           datasetId,
           messages: [...(t.id === res.conversation_id ? t.messages : []), res.question, res.reply],
         }));
+        setOverride(null);
         if (!conversationId) router.replace(`/chat?c=${res.conversation_id}`, { scroll: false });
         api<ConversationSummary[]>("/chat/conversations").then(setConversations).catch(() => undefined);
       } catch (e) {
@@ -261,11 +271,15 @@ export function ChatView() {
         <div className="aurora" aria-hidden />
         <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-sm dark:border-zinc-800">
           <span className="text-zinc-500">Talking to</span>
-          {isNew && datasets ? (
+          {datasets && datasets.length > 0 ? (
             <select
               value={datasetId ?? ""}
-              onChange={(e) => setChosenDatasetId(e.target.value)}
-              className="rounded-lg border border-zinc-300 bg-white px-2 py-1 font-medium dark:border-zinc-700 dark:bg-zinc-900"
+              onChange={(e) => {
+                setChosenDatasetId(e.target.value);
+                setOverride({ conv: conversationId, id: e.target.value });
+              }}
+              title="Switch the data source for your next question"
+              className="max-w-[60%] truncate rounded-lg border border-zinc-300 bg-white px-2 py-1 font-medium dark:border-zinc-700 dark:bg-zinc-900"
             >
               {datasets.map((d) => (
                 <option key={d.id} value={d.id}>
@@ -276,6 +290,11 @@ export function ChatView() {
             </select>
           ) : (
             <span className="font-medium">{dataset?.name ?? "…"}</span>
+          )}
+          {!isNew && sourceOverride && sourceOverride !== thread.datasetId && (
+            <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-600 dark:bg-indigo-950/60 dark:text-indigo-300">
+              switching source
+            </span>
           )}
           <button
             className="ml-auto rounded-md px-2 py-1 text-zinc-600 hover:bg-zinc-100 md:hidden dark:text-zinc-400 dark:hover:bg-zinc-800"
