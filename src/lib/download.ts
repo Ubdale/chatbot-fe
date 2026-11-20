@@ -57,5 +57,7 @@ export const FORMAT_LABELS: Record<ExportFormat, string> = {
 export async function downloadExport(messageId: string, filename: string, format: ExportFormat) {
   const res = await fetch(`/api/chat/messages/${messageId}/export.${format}`, { credentials: "same-origin" });
   if (!res.ok) throw new Error(`Export failed (${res.status})`);
-  save(await res.blob(), `${filename}.${format}`);
+  // The server names the file after what was computed ("Total-revenue-by-region.xlsx").
+  const served = /filename="([^"]+)"/.exec(res.headers.get("Content-Disposition") ?? "")?.[1];
+  save(await res.blob(), served ?? `${filename}.${format}`);
 }
