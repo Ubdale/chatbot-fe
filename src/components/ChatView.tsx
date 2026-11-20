@@ -92,13 +92,16 @@ export function ChatView() {
   // scoped to the conversation it was made in (null = a new, unsaved chat).
   const [override, setOverride] = useState<{ conv: string | null; id: string } | null>(null);
   const [detail, setDetail] = useState<Dataset | null>(null);
-  const [pending, setPending] = useState<string | null>(null);
+  // The in-flight question, tagged with the chat it belongs to (so it never shows in
+  // another chat you switch to).
+  const [pending, setPending] = useState<{ conv: string | null; text: string } | null>(null);
   const [stage, setStage] = useState<Stage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const elapsed = useElapsedSeconds(pending !== null);
+  // The pending turn belongs to this chat only when its conversation matches the URL.
 
   // Everything below is derived from the URL + loaded data (no state syncing in effects).
   const threadLoaded = thread.id === conversationId;
@@ -121,11 +124,20 @@ export function ChatView() {
       : null;
   const datasetId = sourceOverride ?? baseDatasetId;
   const dataset = detail && detail.id === datasetId ? detail : null;
+  const showPending = pending && pending.conv === conversationId;
 
   useEffect(() => {
     api<DatasetSummary[]>("/datasets").then(setDatasets).catch((e: ApiError) => setError(e.message));
     api<ConversationSummary[]>("/chat/conversations").then(setConversations).catch(() => undefined);
   }, []);
+
+  // Switching chats: drop the draft, error and progress so nothing carries over.
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setInput("");
+    setError(null);
+    setStage(null);
+  }, [conversationId]);
 
   useEffect(() => {
     if (!conversationId || threadLoaded) return;
@@ -155,7 +167,7 @@ export function ChatView() {
     async (question: string) => {
       const q = question.trim();
       if (!q || pending) return;
-      setPending(q);
+      setPending({ conv: conversationId, text: q });
       setStage(null);
       setError(null);
       setInput("");
@@ -311,7 +323,7 @@ export function ChatView() {
 
         <div className="relative z-10 flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-3xl space-y-6">
-            {isNew && messages.length === 0 && !pending && (
+            {isNew && messages.length === 0 && !showPending && (
               <div className="pt-10 text-center">
                 <div className="hero-orb avatar-orb thinking-orb mx-auto mb-5 h-16 w-16 text-2xl">✦</div>
                 <p className="animate-fade-up text-sm font-medium text-indigo-500">{greeting()} 👋</p>
@@ -349,9 +361,9 @@ export function ChatView() {
               m.role === "user" ? <UserBubble key={m.id} text={m.content} /> : <AssistantTurn key={m.id} message={m} />,
             )}
 
-            {pending && (
+            {showPending && (
               <>
-                <UserBubble text={pending} faded />
+                <UserBubble text={pending.text} faded />
                 <Thinking stage={stage} kind={kind} elapsed={elapsed} />
               </>
             )}
