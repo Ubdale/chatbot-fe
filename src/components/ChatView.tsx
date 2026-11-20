@@ -9,6 +9,7 @@ import { AnswerCard } from "@/components/AnswerCard";
 import { Feedback } from "@/components/Feedback";
 import { Thinking } from "@/components/Thinking";
 import { Button, ErrorNote } from "@/components/ui";
+import { Select } from "@/components/Select";
 import { api, ApiError } from "@/lib/api";
 import { askStream, StreamUnavailable, type Stage } from "@/lib/stream";
 import { suggestQuestions } from "@/lib/suggestions";
@@ -272,22 +273,20 @@ export function ChatView() {
         <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-sm dark:border-zinc-800">
           <span className="text-zinc-500">Talking to</span>
           {datasets && datasets.length > 0 ? (
-            <select
+            <Select
               value={datasetId ?? ""}
-              onChange={(e) => {
-                setChosenDatasetId(e.target.value);
-                setOverride({ conv: conversationId, id: e.target.value });
+              onValueChange={(v) => {
+                setChosenDatasetId(v);
+                setOverride({ conv: conversationId, id: v });
               }}
-              title="Switch the data source for your next question"
-              className="max-w-[60%] truncate rounded-lg border border-zinc-300 bg-white px-2 py-1 font-medium dark:border-zinc-700 dark:bg-zinc-900"
-            >
-              {datasets.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.kind === "document" ? "📄 " : "▦ "}
-                  {d.name}
-                </option>
-              ))}
-            </select>
+              ariaLabel="Data source"
+              className="max-w-[60%]"
+              items={datasets.map((d) => ({
+                value: d.id,
+                label: d.name,
+                icon: <span>{d.kind === "document" ? "📄" : "▦"}</span>,
+              }))}
+            />
           ) : (
             <span className="font-medium">{dataset?.name ?? "…"}</span>
           )}

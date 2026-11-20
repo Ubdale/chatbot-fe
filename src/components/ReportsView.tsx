@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { DataTable } from "@/components/DataTable";
 import { Card, ErrorNote, Input, Spinner } from "@/components/ui";
+import { Select } from "@/components/Select";
 import { api, ApiError } from "@/lib/api";
 import type { Digest, DigestRun } from "@/lib/types";
 
@@ -103,28 +104,22 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
       </ul>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
-        <select
+        <Select
           value={digest.cadence}
-          onChange={(e) => save({ cadence: e.target.value })}
-          className={select}
-          aria-label="How often"
-        >
-          <option value="weekly">Every week</option>
-          <option value="daily">Every day</option>
-        </select>
+          onValueChange={(v) => save({ cadence: v })}
+          ariaLabel="How often"
+          items={[
+            { value: "weekly", label: "Every week" },
+            { value: "daily", label: "Every day" },
+          ]}
+        />
         {digest.cadence === "weekly" && (
-          <select
-            value={digest.weekday}
-            onChange={(e) => save({ weekday: Number(e.target.value) })}
-            className={select}
-            aria-label="Day"
-          >
-            {DAYS.map((d, i) => (
-              <option key={d} value={i}>
-                on {d}
-              </option>
-            ))}
-          </select>
+          <Select
+            value={String(digest.weekday)}
+            onValueChange={(v) => save({ weekday: Number(v) })}
+            ariaLabel="Day"
+            items={DAYS.map((d, i) => ({ value: String(i), label: `on ${d}` }))}
+          />
         )}
         <label className="flex items-center gap-1.5">
           at
