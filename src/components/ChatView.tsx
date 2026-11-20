@@ -107,7 +107,13 @@ export function ChatView() {
     ? threadLoaded
       ? thread.datasetId
       : null
-    : (datasets?.find((d) => d.id === (chosenDatasetId ?? datasetParam))?.id ?? datasets?.[0]?.id ?? null);
+    : // The URL's ?d= (the file you just clicked "Ask" on) wins, even before the list
+      // finishes loading, so a new upload is never ignored for the previous one.
+      (datasets?.find((d) => d.id === (chosenDatasetId ?? datasetParam))?.id ??
+        chosenDatasetId ??
+        datasetParam ??
+        datasets?.[0]?.id ??
+        null);
   // A chosen override for THIS conversation (and still in the list) wins.
   const sourceOverride =
     override && override.conv === conversationId && datasets?.some((d) => d.id === override.id)

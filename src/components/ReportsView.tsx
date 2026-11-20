@@ -29,8 +29,10 @@ function Delta({ now, before }: { now?: number | null; before?: number | null })
   );
 }
 
-function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => void }) {
-  const [recipients, setRecipients] = useState(digest.recipients.join(", "));
+function DigestEditor({ digest, onRemoved }: { digest: Digest; onRemoved: () => void }) {
+  // Work on a local copy so rescheduling updates in place (no remount, no lost focus).
+  const [local, setLocal] = useState<Digest>(digest);
+  const [recipientInput, setRecipientInput] = useState("");
   const [state, setState] = useState<"idle" | "busy">("idle");
   const [note, setNote] = useState<string | null>(null);
 
@@ -38,8 +40,8 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
     setState("busy");
     setNote(null);
     try {
-      await api(`/digests/${digest.id}`, { method: "PATCH", json: patch });
-      onChange();
+      const updated = await api<Digest>(`/digests/${local.id}`, { method: "PATCH", json: patch });
+      setLocal(updated);
     } catch (e) {
       setNote(e instanceof ApiError ? e.message : "Couldn't save.");
     } finally {
@@ -47,13 +49,28 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
     }
   }
 
+  function addRecipients() {
+    const added = recipientInput
+      .split(/[,\s]+/)
+      .map((r) => r.trim().toLowerCase())
+      .filter((r) => r.includes("@"));
+    if (added.length === 0) return;
+    const merged = Array.from(new Set([...local.recipients, ...added]));
+    setRecipientInput("");
+    void save({ recipients: merged });
+  }
+
+  function removeRecipient(email: string) {
+    void save({ recipients: local.recipients.filter((r) => r !== email) });
+  }
+
   async function runNow() {
     setState("busy");
     setNote(null);
     try {
-      const run = await api<DigestRun>(`/digests/${digest.id}/run`, { method: "POST" });
+      const run = await api<DigestRun>(`/digests/${local.id}/run`, { method: "POST" });
       setNote(run.emailed ? "Sent by email and added below." : `Added below. ${run.email_note ?? ""}`);
-      onChange();
+      onRemoved(); // refresh the "recent digests" list
     } catch (e) {
       setNote(e instanceof ApiError ? e.message : "Couldn't send it.");
     } finally {
@@ -62,21 +79,21 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
   }
 
   async function remove() {
-    if (!confirm(`Delete the digest “${digest.title}”?`)) return;
-    await api(`/digests/${digest.id}`, { method: "DELETE" });
-    onChange();
+    if (!confirm(`Delete the digest “${local.title}”?`)) return;
+    await api(`/digests/${local.id}`, { method: "DELETE" });
+    onRemoved();
   }
 
   const select =
     "rounded-md border border-zinc-300 bg-white px-2 py-1 text-sm dark:border-zinc-700 dark:bg-zinc-900";
   return (
-    <Card className={`space-y-3 p-4 ${digest.active ? "" : "opacity-60"}`}>
+    <Card className={`space-y-3 p-4 ${local.active ? "" : "opacity-60"}`}>
       <div className="flex flex-wrap items-start gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold">{digest.title}</h3>
+          <h3 className="font-semibold">{local.title}</h3>
           <p className="text-xs text-zinc-500">
-            From “{digest.dataset_name}” · next: {new Date(digest.next_run_at).toLocaleString()}
-            {digest.last_run_at && ` · last: ${new Date(digest.last_run_at).toLocaleString()}`}
+            From “{local.dataset_name}” · next: {new Date(local.next_run_at).toLocaleString()}
+            {local.last_run_at && ` · last: ${new Date(local.last_run_at).toLocaleString()}`}
           </p>
         </div>
         <button
@@ -87,10 +104,10 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
           {state === "busy" ? "…" : "Send now"}
         </button>
         <button
-          onClick={() => save({ active: !digest.active })}
+          onClick={() => save({ active: !local.active })}
           className="rounded-md border border-zinc-200 px-2 py-1 text-xs dark:border-zinc-700"
         >
-          {digest.active ? "Pause" : "Resume"}
+          {local.active ? "Pause" : "Resume"}
         </button>
         <button onClick={remove} className="rounded-md px-2 py-1 text-xs text-red-600 hover:bg-red-50 dark:hover:bg-red-950/30">
           Delete
@@ -98,14 +115,14 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
       </div>
 
       <ul className="list-inside list-disc text-sm text-zinc-700 dark:text-zinc-300">
-        {digest.questions.map((q) => (
+        {local.questions.map((q) => (
           <li key={q}>{q}</li>
         ))}
       </ul>
 
       <div className="flex flex-wrap items-center gap-2 text-sm">
         <Select
-          value={digest.cadence}
+          value={local.cadence}
           onValueChange={(v) => save({ cadence: v })}
           ariaLabel="How often"
           items={[
@@ -113,9 +130,9 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
             { value: "daily", label: "Every day" },
           ]}
         />
-        {digest.cadence === "weekly" && (
+        {local.cadence === "weekly" && (
           <Select
-            value={String(digest.weekday)}
+            value={String(local.weekday)}
             onValueChange={(v) => save({ weekday: Number(v) })}
             ariaLabel="Day"
             items={DAYS.map((d, i) => ({ value: String(i), label: `on ${d}` }))}
@@ -125,40 +142,63 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
           at
           <input
             type="time"
-            value={`${String(digest.hour).padStart(2, "0")}:${String(digest.minute).padStart(2, "0")}`}
-            onChange={(e) => {
+            defaultValue={`${String(local.hour).padStart(2, "0")}:${String(local.minute ?? 0).padStart(2, "0")}`}
+            key={`${local.hour}:${local.minute}`}
+            onBlur={(e) => {
               const [h, m] = e.target.value.split(":").map(Number);
-              if (!Number.isNaN(h) && !Number.isNaN(m)) save({ hour: h, minute: m });
+              if (!Number.isNaN(h) && !Number.isNaN(m) && (h !== local.hour || m !== local.minute)) {
+                save({ hour: h, minute: m });
+              }
             }}
             className={select}
             aria-label="Time of day"
           />
         </label>
-        <span className="text-xs text-zinc-500">{digest.timezone}</span>
+        <span className="text-xs text-zinc-500">{local.timezone}</span>
       </div>
 
-      <form
-        className="flex flex-wrap items-center gap-2"
-        onSubmit={(e) => {
-          e.preventDefault();
-          const list = recipients
-            .split(/[,\s]+/)
-            .map((r) => r.trim())
-            .filter(Boolean);
-          void save({ recipients: list });
-        }}
-      >
-        <Input
-          value={recipients}
-          onChange={(e) => setRecipients(e.target.value)}
-          placeholder="Email addresses, separated by commas"
-          className="min-w-64 flex-1"
-          aria-label="Recipients"
-        />
-        <button type="submit" className="rounded-md border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700">
-          Save recipients
-        </button>
-      </form>
+      <div className="space-y-1.5">
+        <p className="text-xs font-medium text-zinc-500">
+          Send to {local.recipients.length} {local.recipients.length === 1 ? "address" : "addresses"}
+        </p>
+        <div className="flex flex-wrap gap-1.5">
+          {local.recipients.map((email) => (
+            <span
+              key={email}
+              className="inline-flex items-center gap-1 rounded-full bg-indigo-50 py-0.5 pl-2.5 pr-1 text-xs text-indigo-800 dark:bg-indigo-950/60 dark:text-indigo-200"
+            >
+              {email}
+              <button
+                onClick={() => removeRecipient(email)}
+                aria-label={`Remove ${email}`}
+                disabled={local.recipients.length === 1}
+                className="rounded-full px-1 text-indigo-400 hover:text-red-600 disabled:opacity-30"
+                title={local.recipients.length === 1 ? "Keep at least one recipient" : "Remove"}
+              >
+                ×
+              </button>
+            </span>
+          ))}
+        </div>
+        <form
+          className="flex flex-wrap items-center gap-2"
+          onSubmit={(e) => {
+            e.preventDefault();
+            addRecipients();
+          }}
+        >
+          <Input
+            value={recipientInput}
+            onChange={(e) => setRecipientInput(e.target.value)}
+            placeholder="Add email(s), separated by commas"
+            className="min-w-64 flex-1"
+            aria-label="Add recipients"
+          />
+          <button type="submit" className="rounded-md border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700">
+            Add
+          </button>
+        </form>
+      </div>
       {note && <p className="text-xs text-zinc-600 dark:text-zinc-400">{note}</p>}
     </Card>
   );
@@ -236,7 +276,7 @@ export function ReportsView() {
         ) : digests.length === 0 ? (
           <p className="text-sm text-zinc-500">No scheduled reports yet.</p>
         ) : (
-          digests.map((d) => <DigestEditor key={`${d.id}-${d.next_run_at}-${d.active}`} digest={d} onChange={load} />)
+          digests.map((d) => <DigestEditor key={d.id} digest={d} onRemoved={load} />)
         )}
       </section>
 
