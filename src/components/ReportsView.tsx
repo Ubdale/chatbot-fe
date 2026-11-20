@@ -9,7 +9,6 @@ import { api, ApiError } from "@/lib/api";
 import type { Digest, DigestRun } from "@/lib/types";
 
 const DAYS = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
-const HOURS = Array.from({ length: 24 }, (_, h) => h);
 
 function fmtNumber(v: number): string {
   return Number.isInteger(v) ? v.toLocaleString() : v.toLocaleString(undefined, { maximumFractionDigits: 2 });
@@ -127,13 +126,19 @@ function DigestEditor({ digest, onChange }: { digest: Digest; onChange: () => vo
             ))}
           </select>
         )}
-        <select value={digest.hour} onChange={(e) => save({ hour: Number(e.target.value) })} className={select} aria-label="Time">
-          {HOURS.map((h) => (
-            <option key={h} value={h}>
-              at {String(h).padStart(2, "0")}:00
-            </option>
-          ))}
-        </select>
+        <label className="flex items-center gap-1.5">
+          at
+          <input
+            type="time"
+            value={`${String(digest.hour).padStart(2, "0")}:${String(digest.minute).padStart(2, "0")}`}
+            onChange={(e) => {
+              const [h, m] = e.target.value.split(":").map(Number);
+              if (!Number.isNaN(h) && !Number.isNaN(m)) save({ hour: h, minute: m });
+            }}
+            className={select}
+            aria-label="Time of day"
+          />
+        </label>
         <span className="text-xs text-zinc-500">{digest.timezone}</span>
       </div>
 

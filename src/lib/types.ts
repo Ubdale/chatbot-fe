@@ -82,6 +82,7 @@ export type Digest = {
   cadence: "daily" | "weekly";
   weekday: number;
   hour: number;
+  minute: number;
   timezone: string;
   schedule: string;
   recipients: string[];
