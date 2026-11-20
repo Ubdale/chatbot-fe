@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import type React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useRef, useState, type FormEvent, type KeyboardEvent } from "react";
 
@@ -60,7 +61,16 @@ function AssistantTurn({ message }: { message: Message }) {
   );
 }
 
-const SUGGESTION_ICONS = ["◆", "↗", "◷", "≡", "?"];
+const SUGGESTION_ICONS = ["◆", "↗", "◷", "≡", "✶"];
+
+function greeting(): string {
+  const h = new Date().getHours();
+  if (h < 5) return "Burning the midnight oil";
+  if (h < 12) return "Good morning";
+  if (h < 17) return "Good afternoon";
+  if (h < 21) return "Good evening";
+  return "Working late";
+}
 
 export function ChatView() {
   const router = useRouter();
@@ -247,7 +257,8 @@ export function ChatView() {
         </div>
       </aside>
 
-      <section className="flex min-h-0 min-w-0 flex-1 flex-col">
+      <section className="relative flex min-h-0 min-w-0 flex-1 flex-col">
+        <div className="aurora" aria-hidden />
         <div className="flex items-center gap-2 border-b border-zinc-200 px-4 py-2.5 text-sm dark:border-zinc-800">
           <span className="text-zinc-500">Talking to</span>
           {isNew && datasets ? (
@@ -274,31 +285,35 @@ export function ChatView() {
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-6">
+        <div className="relative z-10 flex-1 overflow-y-auto px-4 py-6">
           <div className="mx-auto max-w-3xl space-y-6">
             {isNew && messages.length === 0 && !pending && (
-              <div className="animate-fade-up pt-8 text-center">
-                <div className="avatar-orb mx-auto mb-4 h-14 w-14 text-2xl">✦</div>
-                <h1 className="text-2xl font-semibold tracking-tight">
-                  {dataset ? `What would you like to know about “${dataset.name}”?` : "What would you like to know?"}
+              <div className="pt-10 text-center">
+                <div className="hero-orb avatar-orb thinking-orb mx-auto mb-5 h-16 w-16 text-2xl">✦</div>
+                <p className="animate-fade-up text-sm font-medium text-indigo-500">{greeting()} 👋</p>
+                <h1 className="animate-fade-up mt-1 text-3xl font-semibold tracking-tight">
+                  <span className="gradient-text">
+                    {dataset ? `Ask “${dataset.name}” anything` : "What would you like to know?"}
+                  </span>
                 </h1>
-                <p className="mx-auto mt-2 max-w-md text-sm text-zinc-500">
+                <p className="animate-fade-up mx-auto mt-3 max-w-md text-sm text-zinc-500">
                   {kind === "document"
-                    ? "Ask in plain English. Answers quote the document, with the page they came from."
-                    : "Ask in plain English. The numbers are computed straight from your data, never guessed."}
+                    ? "Answers quote the document, with the page they came from — in English, Urdu or Roman Urdu."
+                    : "Numbers are computed straight from your data, never guessed. Ask in English, Urdu or Roman Urdu."}
                 </p>
                 {suggestions.length > 0 && (
-                  <div className="mt-8 grid gap-2 text-left sm:grid-cols-2">
+                  <div className="mt-9 grid gap-2.5 text-left sm:grid-cols-2">
                     {suggestions.map((s, i) => (
                       <button
                         key={s}
                         onClick={() => ask(s)}
-                        className="group flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white px-4 py-3 text-sm transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-md dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-800"
+                        style={{ "--i": i } as React.CSSProperties}
+                        className="card-rise group flex items-start gap-3 rounded-2xl border border-zinc-200/80 bg-white/70 px-4 py-3 text-sm backdrop-blur transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-indigo-700"
                       >
-                        <span className="mt-0.5 text-indigo-500 transition group-hover:scale-110">
+                        <span className="grid h-6 w-6 shrink-0 place-items-center rounded-lg bg-indigo-50 text-indigo-500 transition group-hover:scale-110 group-hover:bg-indigo-100 dark:bg-indigo-950/60 dark:group-hover:bg-indigo-900">
                           {SUGGESTION_ICONS[i % SUGGESTION_ICONS.length]}
                         </span>
-                        {s}
+                        <span className="pt-0.5">{s}</span>
                       </button>
                     ))}
                   </div>
@@ -321,8 +336,8 @@ export function ChatView() {
           </div>
         </div>
 
-        <form onSubmit={onSubmit} className="sticky bottom-0 bg-linear-to-t from-[var(--background)] via-[var(--background)] to-transparent px-4 pb-4 pt-2">
-          <div className="mx-auto flex max-w-3xl items-end gap-2 rounded-3xl border border-zinc-300 bg-white p-2 pl-4 shadow-lg shadow-indigo-500/5 transition focus-within:border-indigo-400 focus-within:ring-4 focus-within:ring-indigo-500/10 dark:border-zinc-700 dark:bg-zinc-900">
+        <form onSubmit={onSubmit} className="relative z-10 sticky bottom-0 bg-linear-to-t from-[var(--background)] via-[var(--background)] to-transparent px-4 pb-4 pt-2">
+          <div className="composer mx-auto flex max-w-3xl items-end gap-2 rounded-3xl border border-zinc-300 bg-white p-2 pl-4 shadow-lg shadow-indigo-500/5 transition dark:border-zinc-700 dark:bg-zinc-900">
             <textarea
               ref={inputRef}
               value={input}
