@@ -80,7 +80,7 @@ export function AppShell({ children }: { children: ReactNode }) {
     // Exactly one screen: the header stays put and the area below it scrolls on its own.
     <div className="flex h-dvh flex-col overflow-hidden">
       <header className="sticky top-0 z-20 border-b border-zinc-200 bg-white/80 backdrop-blur dark:border-zinc-800 dark:bg-zinc-950/80">
-        <div className="mx-auto flex h-14 max-w-7xl items-center gap-6 px-4">
+        <div className="flex h-14 w-full items-center gap-6 px-5">
           <Link href="/chat" className="flex items-center gap-2 font-semibold">
             <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-indigo-600 text-sm font-bold text-white">
               A

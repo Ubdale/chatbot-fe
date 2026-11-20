@@ -224,7 +224,7 @@ export function ChatView() {
     // The messages column runs to the window's right edge, so its scrollbar sits there;
     // the sidebar stays lined up with the header's content.
     <div className="flex min-h-0 w-full flex-1 overflow-hidden">
-      <aside className="ml-[max(0px,calc((100%-80rem)/2))] hidden min-h-0 w-64 shrink-0 flex-col border-r border-zinc-200 p-3 md:flex dark:border-zinc-800">
+      <aside className="hidden min-h-0 w-72 shrink-0 flex-col border-r border-zinc-200 bg-white/40 p-3 backdrop-blur md:flex dark:border-zinc-800 dark:bg-zinc-950/30">
         <button
           onClick={() => router.push("/chat")}
           className="mb-3 flex items-center gap-2 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm font-medium shadow-sm transition hover:border-indigo-300 hover:shadow dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-indigo-800"

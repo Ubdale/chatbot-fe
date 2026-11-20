@@ -214,9 +214,9 @@ export function ReportsView() {
   useEffect(load, [load]);
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-8 px-4 py-8">
+    <main className="mx-auto w-full max-w-5xl space-y-8 px-5 py-8">
       <div>
-        <h1 className="text-2xl font-semibold">Reports</h1>
+        <h1 className="text-3xl font-semibold tracking-tight"><span className="gradient-text">Reports</span></h1>
         <p className="text-sm text-zinc-500">
           Questions AskData re-runs on a schedule, with fresh numbers each time. To add one, ask a question in{" "}
           <Link href="/chat" className="text-indigo-600 hover:underline">

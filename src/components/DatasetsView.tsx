@@ -1,9 +1,10 @@
 "use client";
 
 import Link from "next/link";
+import type React from "react";
 import { useEffect, useRef, useState, type DragEvent } from "react";
 
-import { Button, Card, ErrorNote, Spinner } from "@/components/ui";
+import { Button, ErrorNote, Spinner } from "@/components/ui";
 import { api, ApiError } from "@/lib/api";
 import { formatBytes, formatDate } from "@/lib/format";
 import type { DatasetSummary, UploadResult } from "@/lib/types";
@@ -76,9 +77,9 @@ export function DatasetsView() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-5xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-6xl space-y-6 px-5 py-8">
       <div>
-        <h1 className="text-2xl font-semibold">Datasets</h1>
+        <h1 className="text-3xl font-semibold tracking-tight"><span className="gradient-text">Your data</span></h1>
         <p className="mt-1 text-sm text-zinc-500">
           Upload a CSV or Excel file. Only column names, types and a few sample values are shared
           with the AI, never your rows.
@@ -148,40 +149,54 @@ export function DatasetsView() {
       ) : datasets.length === 0 ? (
         <p className="text-sm text-zinc-500">No datasets yet.</p>
       ) : (
-        <Card>
-          <ul className="divide-y divide-zinc-200 dark:divide-zinc-800">
-            {datasets.map((ds) => (
-              <li key={ds.id} className="flex flex-wrap items-center gap-3 px-4 py-3">
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          {datasets.map((ds, i) => (
+            <div
+              key={ds.id}
+              style={{ "--i": i } as React.CSSProperties}
+              className="card-rise group relative flex flex-col gap-3 rounded-2xl border border-zinc-200/80 bg-white/70 p-4 backdrop-blur transition hover:-translate-y-0.5 hover:border-indigo-300 hover:shadow-lg hover:shadow-indigo-500/10 dark:border-zinc-800 dark:bg-zinc-900/60 dark:hover:border-indigo-700"
+            >
+              <div className="flex items-start gap-3">
+                <span className={`grid h-10 w-10 shrink-0 place-items-center rounded-xl text-base font-bold text-white ${ds.kind === "document" ? "bg-gradient-to-br from-violet-500 to-fuchsia-600" : "bg-gradient-to-br from-indigo-500 to-blue-600"}`}>
+                  {ds.kind === "document" ? "📄" : "▦"}
+                </span>
                 <div className="min-w-0 flex-1">
-                  <Link href={`/datasets/${ds.id}`} className="font-medium hover:underline">
+                  <Link href={`/datasets/${ds.id}`} className="block truncate font-medium hover:text-indigo-600 dark:hover:text-indigo-400" title={ds.name}>
                     {ds.name}
                   </Link>
-                  {ds.kind === "document" && (
-                    <span className="ml-2 rounded bg-violet-100 px-1.5 py-0.5 text-xs text-violet-800 dark:bg-violet-950 dark:text-violet-300">
-                      Document
-                    </span>
-                  )}
-                  {ds.extraction === "ai_vision" && (
-                    <span className="ml-2 rounded bg-amber-100 px-1.5 py-0.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">
-                      AI-read: please check
-                    </span>
-                  )}
-                  <p className="text-xs text-zinc-500">
-                    {ds.row_count.toLocaleString()} {ds.kind === "document" ? "passages" : "rows"} ·{" "}
-                    {ds.file_format.toUpperCase()} ·{" "}
-                    {formatBytes(ds.size_bytes)} · added {formatDate(ds.created_at)}
+                  <p className="mt-0.5 text-xs text-zinc-500">
+                    {ds.row_count.toLocaleString()} {ds.kind === "document" ? "passages" : "rows"} · {ds.file_format.toUpperCase()}
                   </p>
                 </div>
-                <Link href={`/chat?d=${ds.id}`}>
-                  <Button variant="ghost">Ask a question</Button>
+              </div>
+              {(ds.version > 1 || ds.extraction === "ai_vision") && (
+                <div className="flex flex-wrap gap-1.5">
+                  {ds.version > 1 && (
+                    <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-medium text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">v{ds.version}</span>
+                  )}
+                  {ds.extraction === "ai_vision" && (
+                    <span className="rounded-full bg-amber-100 px-2 py-0.5 text-xs text-amber-800 dark:bg-amber-950 dark:text-amber-300">AI-read: please check</span>
+                  )}
+                </div>
+              )}
+              <p className="text-xs text-zinc-400">
+                {formatBytes(ds.size_bytes)} · added {formatDate(ds.created_at)}
+              </p>
+              <div className="mt-auto flex items-center gap-2 pt-1">
+                <Link href={`/chat?d=${ds.id}`} className="flex-1">
+                  <Button variant="ghost" className="w-full">Ask a question</Button>
                 </Link>
-                <Button variant="danger" onClick={() => remove(ds)}>
-                  Delete
-                </Button>
-              </li>
-            ))}
-          </ul>
-        </Card>
+                <button
+                  onClick={() => remove(ds)}
+                  aria-label={`Delete ${ds.name}`}
+                  className="rounded-lg px-2 py-1.5 text-sm text-zinc-400 opacity-0 transition hover:bg-red-50 hover:text-red-600 group-hover:opacity-100 dark:hover:bg-red-950/30"
+                >
+                  🗑
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
       )}
     </main>
   );

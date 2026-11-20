@@ -58,13 +58,13 @@ export function DatasetDetail({ id }: { id: string }) {
   }
 
   return (
-    <main className="mx-auto w-full max-w-6xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-6xl space-y-6 px-5 py-8">
       <div className="flex flex-wrap items-end gap-4">
         <div className="flex-1">
           <Link href="/datasets" className="text-sm text-zinc-500 hover:underline">
             ← Datasets
           </Link>
-          <h1 className="mt-1 text-2xl font-semibold">{dataset.name}</h1>
+          <h1 className="mt-1 text-3xl font-semibold tracking-tight"><span className="gradient-text">{dataset.name}</span></h1>
           <p className="text-sm text-zinc-500">
             {dataset.row_count.toLocaleString()} rows · {dataset.columns.length} columns · from{" "}
             {dataset.original_filename}

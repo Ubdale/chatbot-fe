@@ -125,9 +125,9 @@ export function SettingsView() {
   }
 
   return (
-    <main className="mx-auto w-full max-w-4xl space-y-6 px-4 py-8">
+    <main className="mx-auto w-full max-w-5xl space-y-6 px-5 py-8">
       <div>
-        <h1 className="text-2xl font-semibold">Settings</h1>
+        <h1 className="text-3xl font-semibold tracking-tight"><span className="gradient-text">Settings</span></h1>
         <p className="mt-1 text-sm text-zinc-500">Your team, your account and recent activity.</p>
       </div>
       {error && <ErrorNote>{error}</ErrorNote>}
