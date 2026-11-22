@@ -9,6 +9,15 @@ import { formatDate } from "@/lib/format";
 import type { User } from "@/lib/types";
 
 type Member = User;
+type Activity = {
+  questions_total: number;
+  questions_this_week: number;
+  datasets: number;
+  conversations: number;
+  active_members: number;
+  top_datasets: { name: string; questions: number }[];
+  busiest_people: { email: string; questions: number }[];
+};
 type Invite = { id: string; email: string; role: string; expires_at: string; token?: string };
 type AuditEvent = {
   id: string;
@@ -56,6 +65,7 @@ export function SettingsView() {
   const [members, setMembers] = useState<Member[]>([]);
   const [invites, setInvites] = useState<Invite[]>([]);
   const [events, setEvents] = useState<AuditEvent[]>([]);
+  const [activity, setActivity] = useState<Activity | null>(null);
   const [newLink, setNewLink] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
@@ -64,6 +74,7 @@ export function SettingsView() {
   useEffect(() => {
     api<User>("/auth/me").then(setMe).catch(() => undefined);
     api<Member[]>("/workspaces/me/members").then(setMembers).catch(() => undefined);
+    api<Activity>("/workspaces/me/activity").then(setActivity).catch(() => undefined);
   }, []);
   useEffect(() => {
     if (!isAdmin) return;
@@ -135,6 +146,56 @@ export function SettingsView() {
         <p className="rounded-lg border border-emerald-200 bg-emerald-50 px-3 py-2 text-sm text-emerald-800 dark:border-emerald-900 dark:bg-emerald-950/40 dark:text-emerald-200">
           {notice}
         </p>
+      )}
+
+      {activity && (
+        <Section title="Activity" hint="How your workspace is using AskData.">
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: "Questions", value: activity.questions_total },
+              { label: "This week", value: activity.questions_this_week },
+              { label: "Datasets", value: activity.datasets },
+              { label: "People", value: activity.active_members },
+            ].map((s) => (
+              <div key={s.label} className="rounded-xl border border-zinc-200 bg-white/60 p-3 dark:border-zinc-800 dark:bg-zinc-900/50">
+                <p className="text-2xl font-semibold tabular-nums">{s.value.toLocaleString()}</p>
+                <p className="text-xs text-zinc-500">{s.label}</p>
+              </div>
+            ))}
+          </div>
+          <div className="mt-4 grid gap-4 sm:grid-cols-2">
+            <div>
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-400">Busiest datasets</p>
+              {activity.top_datasets.length === 0 ? (
+                <p className="text-sm text-zinc-500">No questions yet.</p>
+              ) : (
+                <ul className="space-y-1 text-sm">
+                  {activity.top_datasets.map((d) => (
+                    <li key={d.name} className="flex justify-between gap-2">
+                      <span className="truncate">{d.name}</span>
+                      <span className="tabular-nums text-zinc-500">{d.questions}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+            <div>
+              <p className="mb-1 text-xs font-medium uppercase tracking-wide text-zinc-400">Most active people</p>
+              {activity.busiest_people.length === 0 ? (
+                <p className="text-sm text-zinc-500">No questions yet.</p>
+              ) : (
+                <ul className="space-y-1 text-sm">
+                  {activity.busiest_people.map((u) => (
+                    <li key={u.email} className="flex justify-between gap-2">
+                      <span className="truncate">{u.email}</span>
+                      <span className="tabular-nums text-zinc-500">{u.questions}</span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </div>
+        </Section>
       )}
 
       <Section title="Team" hint="Owners and admins can invite people. Members can upload data and ask questions.">
