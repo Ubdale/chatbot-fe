@@ -198,3 +198,11 @@ export type AskResponse = {
 };
 
 export type GlossaryTerm = { id: string; term: string; meaning: string; created_at: string };
+
+export type SavedAnswer = {
+  id: string;
+  question: string;
+  dataset_id: string;
+  dataset_name: string;
+  created_at: string;
+};

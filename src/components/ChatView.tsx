@@ -20,6 +20,7 @@ import type {
   Dataset,
   DatasetSummary,
   Message,
+  SavedAnswer,
 } from "@/lib/types";
 
 function useElapsedSeconds(running: boolean): number {
@@ -78,9 +79,11 @@ export function ChatView() {
   const params = useSearchParams();
   const conversationId = params.get("c");
   const datasetParam = params.get("d");
+  const askParam = params.get("ask"); // auto-send a saved/re-run question
 
   const [datasets, setDatasets] = useState<DatasetSummary[] | null>(null);
   const [conversations, setConversations] = useState<ConversationSummary[]>([]);
+  const [saved, setSaved] = useState<SavedAnswer[]>([]);
   // The loaded thread, tagged with its conversation id (null = a new, unsaved chat).
   const [thread, setThread] = useState<{ id: string | null; datasetId: string | null; messages: Message[] }>({
     id: null,
@@ -129,6 +132,7 @@ export function ChatView() {
   useEffect(() => {
     api<DatasetSummary[]>("/datasets").then(setDatasets).catch((e: ApiError) => setError(e.message));
     api<ConversationSummary[]>("/chat/conversations").then(setConversations).catch(() => undefined);
+    api<SavedAnswer[]>("/chat/saved").then(setSaved).catch(() => undefined);
   }, []);
 
   // Switching chats: drop the draft, error and progress so nothing carries over.
@@ -207,6 +211,16 @@ export function ChatView() {
     [conversationId, datasetId, pending, router],
   );
 
+  // Re-run a saved question passed as ?ask=... (once, on a fresh chat).
+  const askedRef = useRef(false);
+  useEffect(() => {
+    if (!askParam || conversationId || !datasetId || pending || askedRef.current) return;
+    askedRef.current = true;
+    void ask(askParam);
+    router.replace(`/chat?d=${datasetId}`, { scroll: false });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [askParam, conversationId, datasetId]);
+
   async function removeConversation(id: string) {
     if (!confirm("Delete this conversation?")) return;
     await api(`/chat/conversations/${id}`, { method: "DELETE" }).catch(() => undefined);
@@ -260,6 +274,34 @@ export function ChatView() {
         >
           <span className="text-indigo-500">✦</span> New chat
         </button>
+        {saved.length > 0 && (
+          <div className="mb-3">
+            <p className="mb-1 px-3 text-xs font-medium uppercase tracking-wide text-amber-500/80">★ Saved</p>
+            <div className="space-y-0.5">
+              {saved.slice(0, 8).map((sv) => (
+                <div key={sv.id} className="group flex items-center rounded-lg text-sm hover:bg-zinc-100 dark:hover:bg-zinc-900">
+                  <Link
+                    href={`/chat?d=${sv.dataset_id}&ask=${encodeURIComponent(sv.question)}`}
+                    className="flex-1 truncate px-3 py-2"
+                    title={`${sv.question} — ${sv.dataset_name}`}
+                  >
+                    {sv.question}
+                  </Link>
+                  <button
+                    onClick={async () => {
+                      await api(`/chat/saved/${sv.id}`, { method: "DELETE" }).catch(() => undefined);
+                      setSaved((xs) => xs.filter((x) => x.id !== sv.id));
+                    }}
+                    className="mr-1 hidden rounded px-1.5 text-zinc-400 hover:text-red-600 group-hover:block"
+                    aria-label="Remove saved question"
+                  >
+                    ×
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
         <p className="mb-1 px-3 text-xs font-medium uppercase tracking-wide text-zinc-400">Recent</p>
         <div className="sidebar-scroll -mr-2 min-h-0 flex-1 space-y-0.5 overflow-y-auto pr-2">
           {conversations.map((c) => (
