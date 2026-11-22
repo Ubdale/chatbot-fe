@@ -3,6 +3,7 @@ import { DoctorPanel } from "@/components/DoctorPanel";
 import { ProofTable } from "@/components/ProofTable";
 import { ScheduleButton } from "@/components/ScheduleButton";
 import { SaveButton } from "@/components/SaveButton";
+import { ShareButton } from "@/components/ShareButton";
 import { CodeBlocks } from "@/components/CodeBlocks";
 import { ExcelButton } from "@/components/ExcelButton";
 import { downloadCsv, FORMAT_LABELS, slug, type ExportFormat } from "@/lib/download";
@@ -166,6 +167,7 @@ export function AnswerCard({ message }: { message: Message }) {
             <>
               <ScheduleButton messageId={message.id} />
               <SaveButton messageId={message.id} />
+              <ShareButton messageId={message.id} />
             </>
           )}
         </div>
