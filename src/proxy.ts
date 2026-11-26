@@ -14,9 +14,14 @@ export function proxy(request: NextRequest) {
     return NextResponse.next();
   }
 
+  // The landing page is public; signed-in visitors skip it and go straight to the app.
+  if (pathname === "/") {
+    return hasSession ? NextResponse.redirect(new URL("/chat", request.url)) : NextResponse.next();
+  }
+
   if (!hasSession && !isAuthPage) {
     const url = new URL("/login", request.url);
-    if (pathname !== "/") url.searchParams.set("next", pathname + search);
+    url.searchParams.set("next", pathname + search);
     return NextResponse.redirect(url);
   }
   if (hasSession && isAuthPage) {

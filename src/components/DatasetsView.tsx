@@ -152,7 +152,23 @@ export function DatasetsView() {
           <Spinner /> Loading…
         </p>
       ) : datasets.length === 0 ? (
-        <p className="text-sm text-zinc-500">No datasets yet.</p>
+        <div className="rounded-2xl border border-dashed border-zinc-300 p-8 text-center dark:border-zinc-700">
+          <p className="text-sm text-zinc-500">No datasets yet. Want to see how it works?</p>
+          <button
+            onClick={async () => {
+              try {
+                const ds = await api<UploadResult>("/datasets/demo", { method: "POST" });
+                setDatasets((list) => [ds, ...(list ?? [])]);
+                setNotice(`Loaded “${ds.name}”. Open it and try “revenue by region”.`);
+              } catch {
+                setError("Couldn't load the sample data.");
+              }
+            }}
+            className="mt-3 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white transition hover:bg-indigo-500"
+          >
+            ✨ Load sample data
+          </button>
+        </div>
       ) : (
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {datasets.map((ds, i) => (

@@ -8,7 +8,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type Keyboard
 import { AnswerCard } from "@/components/AnswerCard";
 import { Feedback } from "@/components/Feedback";
 import { Thinking } from "@/components/Thinking";
-import { Button, ErrorNote } from "@/components/ui";
+import { ErrorNote } from "@/components/ui";
 import { Select } from "@/components/Select";
 import { api, ApiError } from "@/lib/api";
 import { askStream, StreamUnavailable, type Stage } from "@/lib/stream";
@@ -101,6 +101,7 @@ export function ChatView() {
   const [stage, setStage] = useState<Stage | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [input, setInput] = useState("");
+  const [loadingDemo, setLoadingDemo] = useState(false);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const elapsed = useElapsedSeconds(pending !== null);
@@ -240,18 +241,43 @@ export function ChatView() {
     }
   }
 
+  async function loadDemo() {
+    setLoadingDemo(true);
+    try {
+      const ds = await api<DatasetSummary>("/datasets/demo", { method: "POST" });
+      setDatasets((list) => [ds, ...(list ?? [])]);
+      router.push(`/chat?d=${ds.id}`);
+    } catch {
+      setLoadingDemo(false);
+    }
+  }
+
   if (datasets && datasets.length === 0) {
     return (
-      <div className="flex flex-1 items-center justify-center p-8 text-center">
-        <div className="max-w-sm space-y-4">
-          <div className="avatar-orb mx-auto h-14 w-14 text-2xl">✦</div>
-          <h2 className="text-xl font-semibold">Upload something to talk about</h2>
-          <p className="text-sm text-zinc-500">
-            A spreadsheet, a PDF, a Word document or even a photo of a table. Then ask anything.
-          </p>
-          <Link href="/datasets">
-            <Button>Upload a file</Button>
-          </Link>
+      <div className="relative flex flex-1 items-center justify-center p-8 text-center">
+        <div className="aurora" aria-hidden />
+        <div className="relative z-10 max-w-md space-y-5">
+          <div className="hero-orb avatar-orb thinking-orb mx-auto h-16 w-16 text-2xl">✦</div>
+          <div>
+            <h2 className="text-2xl font-semibold tracking-tight">
+              <span className="gradient-text">Welcome to AskData</span>
+            </h2>
+            <p className="mx-auto mt-2 max-w-sm text-sm text-zinc-500">
+              The quickest way to see what it does: start with our sample data and ask a question.
+            </p>
+          </div>
+          <div className="flex flex-col items-center gap-2">
+            <button
+              onClick={loadDemo}
+              disabled={loadingDemo}
+              className="rounded-xl bg-indigo-600 px-5 py-3 font-medium text-white shadow-lg shadow-indigo-500/20 transition hover:bg-indigo-500 disabled:opacity-60"
+            >
+              {loadingDemo ? "Loading sample…" : "✨ Try with sample data"}
+            </button>
+            <Link href="/datasets" className="text-sm text-zinc-500 underline-offset-2 hover:text-indigo-600 hover:underline">
+              or upload your own file
+            </Link>
+          </div>
         </div>
       </div>
     );
