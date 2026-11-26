@@ -88,6 +88,8 @@ export type Digest = {
   schedule: string;
   recipients: string[];
   slack: boolean;
+  condition_op: string | null;
+  condition_value: number | null;
   active: boolean;
   next_run_at: string;
   last_run_at: string | null;

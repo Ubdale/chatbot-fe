@@ -88,7 +88,20 @@ function DigestEditor({ digest, onRemoved }: { digest: Digest; onRemoved: () => 
     <Card className={`space-y-3 p-4 ${local.active ? "" : "opacity-60"}`}>
       <div className="flex flex-wrap items-start gap-2">
         <div className="min-w-0 flex-1">
-          <h3 className="font-semibold">{local.title}</h3>
+          <h3 className="font-semibold">
+            {local.condition_op && (
+              <span className="mr-2 rounded-full bg-amber-100 px-2 py-0.5 text-xs font-medium text-amber-800 dark:bg-amber-950/60 dark:text-amber-300">
+                🚨 Alert
+              </span>
+            )}
+            {local.title}
+          </h3>
+          {local.condition_op && (
+            <p className="text-xs text-amber-600 dark:text-amber-400">
+              Notifies only when the value {{ ">": "goes above", ">=": "reaches", "<": "drops below", "<=": "falls to" }[local.condition_op] ?? local.condition_op}{" "}
+              {local.condition_value?.toLocaleString()}
+            </p>
+          )}
           <p className="text-xs text-zinc-500">
             From “{local.dataset_name}” · next: {new Date(local.next_run_at).toLocaleString()}
             {local.last_run_at && ` · last: ${new Date(local.last_run_at).toLocaleString()}`}
