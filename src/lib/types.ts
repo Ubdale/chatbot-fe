@@ -209,3 +209,18 @@ export type SavedAnswer = {
   dataset_name: string;
   created_at: string;
 };
+
+export type DashboardSummary = { id: string; name: string; tiles: number };
+
+export type DashboardTile = {
+  question: string;
+  dataset_id: string;
+  dataset_name: string;
+  summary: string;
+  columns: string[];
+  rows: unknown[][];
+  chart: Chart | null;
+  error: string | null;
+};
+
+export type DashboardView = { id: string; name: string; tiles: DashboardTile[] };

@@ -2,6 +2,7 @@ import { Chart } from "@/components/Chart";
 import { DoctorPanel } from "@/components/DoctorPanel";
 import { ProofTable } from "@/components/ProofTable";
 import { ScheduleButton } from "@/components/ScheduleButton";
+import { PinButton } from "@/components/PinButton";
 import { SaveButton } from "@/components/SaveButton";
 import { ShareButton } from "@/components/ShareButton";
 import { CodeBlocks } from "@/components/CodeBlocks";
@@ -167,6 +168,7 @@ export function AnswerCard({ message }: { message: Message }) {
             <>
               <ScheduleButton messageId={message.id} />
               <SaveButton messageId={message.id} />
+              <PinButton messageId={message.id} />
               <ShareButton messageId={message.id} />
             </>
           )}

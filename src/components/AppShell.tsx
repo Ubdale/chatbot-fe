@@ -11,6 +11,7 @@ import type { User } from "@/lib/types";
 const NAV = [
   { href: "/chat", label: "Ask" },
   { href: "/datasets", label: "Datasets" },
+  { href: "/dashboards", label: "Dashboards" },
   { href: "/reports", label: "Reports" },
   { href: "/settings", label: "Settings" },
 ];
