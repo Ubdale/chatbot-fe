@@ -12,7 +12,7 @@ import type { DocumentAnswer, Message } from "@/lib/types";
 function DocumentAnswerCard({ content, answer }: { content: string; answer: DocumentAnswer }) {
   return (
     <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-[15px] leading-relaxed">{content}</p>
+      <p dir="auto" className="text-[15px] leading-relaxed">{content}</p>
       {!answer.grounded && (
         <p className="text-xs text-amber-700 dark:text-amber-300">
           The AI&apos;s answer included details it couldn&apos;t back up with the document, so it
@@ -77,7 +77,7 @@ export function AnswerCard({ message }: { message: Message }) {
     const others = (["xlsx", "pdf", "docx", "pptx", "csv"] as const).filter((f) => f !== file.format);
     return (
       <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-[15px] leading-relaxed">{message.content}</p>
+        <p dir="auto" className="text-[15px] leading-relaxed">{message.content}</p>
         <div className="flex flex-wrap items-center gap-3 rounded-lg border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800 dark:bg-zinc-950/40">
           <span className={`grid h-10 w-10 place-items-center rounded-lg text-xs font-bold text-white ${badge.color}`}>
             {badge.text}
@@ -108,7 +108,7 @@ export function AnswerCard({ message }: { message: Message }) {
   if (message.answer.type === "code") {
     return (
       <div className="space-y-3 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-        <p className="text-[15px] leading-relaxed">{message.content}</p>
+        <p dir="auto" className="text-[15px] leading-relaxed">{message.content}</p>
         <CodeBlocks blocks={message.answer.blocks} />
       </div>
     );
@@ -119,7 +119,7 @@ export function AnswerCard({ message }: { message: Message }) {
   const { table, chart, explanation } = message.answer;
   return (
     <div className="space-y-4 rounded-xl border border-zinc-200 bg-white p-4 shadow-sm dark:border-zinc-800 dark:bg-zinc-900">
-      <p className="text-[15px] leading-relaxed">
+      <p dir="auto" className="text-[15px] leading-relaxed">
         {message.answer.reused && (
           <span
             title="Answered instantly from an identical earlier question; numbers recomputed"
