@@ -87,6 +87,7 @@ export type Digest = {
   timezone: string;
   schedule: string;
   recipients: string[];
+  slack: boolean;
   active: boolean;
   next_run_at: string;
   last_run_at: string | null;

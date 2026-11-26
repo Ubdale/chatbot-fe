@@ -203,6 +203,25 @@ function DigestEditor({ digest, onRemoved }: { digest: Digest; onRemoved: () => 
           </button>
         </form>
       </div>
+      <form
+        className="flex flex-wrap items-center gap-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          const input = e.currentTarget.elements.namedItem("slack") as HTMLInputElement;
+          void save({ slack_webhook: input.value.trim() });
+        }}
+      >
+        <Input
+          name="slack"
+          defaultValue=""
+          placeholder={local.slack ? "Slack connected ✓ — paste a new webhook to change" : "Slack webhook URL (optional)"}
+          className="min-w-64 flex-1"
+          aria-label="Slack webhook"
+        />
+        <button type="submit" className="rounded-md border border-zinc-300 px-2 py-1 text-xs dark:border-zinc-700">
+          {local.slack ? "Update Slack" : "Send to Slack"}
+        </button>
+      </form>
       {note && <p className="text-xs text-zinc-600 dark:text-zinc-400">{note}</p>}
     </Card>
   );
