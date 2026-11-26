@@ -7,6 +7,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent, type Keyboard
 
 import { AnswerCard } from "@/components/AnswerCard";
 import { Feedback } from "@/components/Feedback";
+import { MicButton } from "@/components/MicButton";
 import { Thinking } from "@/components/Thinking";
 import { ErrorNote } from "@/components/ui";
 import { Select } from "@/components/Select";
@@ -461,6 +462,10 @@ export function ChatView() {
               className="max-h-40 flex-1 resize-none bg-transparent py-2 text-[15px] outline-none placeholder:text-zinc-400"
               disabled={!datasetId}
               aria-label="Your question"
+            />
+            <MicButton
+              disabled={!datasetId || !!pending}
+              onText={(t) => setInput((v) => (v ? `${v} ${t}` : t))}
             />
             <button
               type="submit"
